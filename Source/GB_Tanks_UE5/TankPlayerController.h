@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+
 #include "TankPlayerController.generated.h"
 
 class ATankPawn;
+class UInputAction;
+struct FInputActionValue;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPlayerController : public APlayerController
@@ -14,19 +17,25 @@ class GB_TANKS_UE5_API ATankPlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	/** Enhanced Player Input Component */
+	UPROPERTY()
+	UEnhancedInputComponent* EnhancedInputComponent;
+
+	/** Input Action Asset responsible for tank movement and rotation */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
+	UInputAction* MovementInputAction;
+
+	//** Controlled Pawn */
 	UPROPERTY()
 	ATankPawn* TankPawn;
 
 public:
 	ATankPlayerController();
 
-	virtual void SetupInputComponent() override;
-
 protected:
+	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 
-	void MoveForward(float AxisValue);
-	void MoveRight(float AxisValue);
-
+	void MoveTank(const FInputActionValue& Value);
 	void CameraZoom(float AxisValue);
 };

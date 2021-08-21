@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "InputMappingContext.h"
+
 #include "TankPawn.generated.h"
 
 class USpringArmComponent;
@@ -15,11 +17,11 @@ class GB_TANKS_UE5_API ATankPawn : public APawn
 	GENERATED_BODY()
 
 protected:
-	// Tank body mesh component
+	/** Tank body mesh component */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* TankBody;
 
-	// Turret body mesh component
+	/** Turret body mesh component */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* TurretBody;
 
@@ -29,22 +31,30 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
 
-	// Tank move speed
+	/** Input Mapping Context Asset our actor will use */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
+	UInputMappingContext* InputMappingContext;
+
+	/** Input Mapping Priority for the selected Mapping Context */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Input")
+	int32 InputMappingPriority = 1;
+
+	/** Tank move speed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 	float MoveSpeed = 500.0f;
 
-	// Tank rotation speed
+	/** Tank rotation speed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 	float RotationSpeed = 100.0f;
 
-	// Sets camera angle
+	/** Sets camera angle */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	FRotator CameraAngle = {270.0f, 0.0f, 0.0f};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	float CameraZoomStep = 100.0f;
 
-	// Holds forward and right input axis
+	/** Holds forward and right input axis */
 	float TargetForwardAxisValue = 0.0f;
 	float TargetRightAxisValue = 0.0f;
 
@@ -53,17 +63,21 @@ public:
 	ATankPawn();
 
 	UFUNCTION()
-	void MoveForward(const float& AxisValue);
+	void MoveForward(float AxisValue);
 
 	UFUNCTION()
-	void MoveRight(const float& AxisValue);
+	void MoveRight(float AxisValue);
 
 	UFUNCTION()
-	void CameraZoom(const float& AxisValue) const;
+	void Rotate(float AxisValue);
+
+	UFUNCTION()
+	void CameraZoom(float AxisValue);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PawnClientRestart() override;
 
 public:
 	// Called every frame

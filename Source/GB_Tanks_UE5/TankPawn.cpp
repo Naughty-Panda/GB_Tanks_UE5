@@ -2,9 +2,12 @@
 
 
 #include "TankPawn.h"
+#include "TankPlayerController.h"
+#include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
+
+#include "EnhancedInputSubsystems.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -35,17 +38,21 @@ ATankPawn::ATankPawn()
 	Camera->SetupAttachment(SpringArm);
 }
 
-void ATankPawn::MoveForward(const float& AxisValue)
+void ATankPawn::MoveForward(float AxisValue)
 {
 	TargetForwardAxisValue = AxisValue;
 }
 
-void ATankPawn::MoveRight(const float& AxisValue)
+void ATankPawn::MoveRight(float AxisValue)
 {
 	TargetRightAxisValue = AxisValue;
 }
 
-void ATankPawn::CameraZoom(const float& AxisValue) const
+void ATankPawn::Rotate(float AxisValue)
+{
+}
+
+void ATankPawn::CameraZoom(float AxisValue)
 {
 	// TODO: Switch from Axis to Action Mapping?
 	// TODO: Smooth camera zooming using lerp?
@@ -61,6 +68,40 @@ void ATankPawn::BeginPlay()
 	Super::BeginPlay();
 }
 
+// PawnClientRestart can run more than once in an Actor's lifetime
+void ATankPawn::PawnClientRestart()
+{
+	Super::PawnClientRestart();
+
+	// Make sure we have a valid Player Controller.
+	ATankPlayerController* PlayerController = Cast<ATankPlayerController>(GetController());
+	if (!PlayerController)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Player Controller Class!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (!Subsystem)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Enhanced Input Local Player Subsystem!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
+	Subsystem->ClearAllMappings();
+
+	if (!InputMappingContext)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: Input Mapping Context Asset wasn't assigned!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
+	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
+}
+
 // Called every frame
 void ATankPawn::Tick(float DeltaTime)
 {
@@ -74,5 +115,10 @@ void ATankPawn::Tick(float DeltaTime)
 		FVector CurrentLocation = GetActorLocation();
 		FVector TargetLocation = CurrentLocation + Direction * MoveSpeed * DeltaTime;
 		SetActorLocation(TargetLocation, true);
+
+		// TODO: FInd a better way to reset Enhanced Input's axes.
+		TargetForwardAxisValue = 0.0f;
+		TargetRightAxisValue = 0.0f;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("%s: %f %f"), TEXT(__FUNCTION__), TargetForwardAxisValue, TargetRightAxisValue)
 }

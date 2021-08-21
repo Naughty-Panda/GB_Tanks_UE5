@@ -2,6 +2,7 @@
 
 
 #include "TankPlayerController.h"
+#include "EnhancedInputComponent.h"
 #include "TankPawn.h"
 
 ATankPlayerController::ATankPlayerController()
@@ -12,10 +13,20 @@ void ATankPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
+	/** Make sure that we are using a UEnhancedInputComponent; if not, the project is not configured correctly. */
+	EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (!EnhancedInputComponent)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Enhanced Input Component Class!"), TEXT(__FUNCTION__));
+		return;
+	}
+	if (!MovementInputAction)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: Input Action Asset wasn't assigned correctly!"), TEXT(__FUNCTION__));
+		return;
+	}
 
-	InputComponent->BindAxis("CameraZoom", this, &ATankPlayerController::CameraZoom);
+	EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ATankPlayerController::MoveTank);
 }
 
 void ATankPlayerController::BeginPlay()
@@ -25,14 +36,14 @@ void ATankPlayerController::BeginPlay()
 	TankPawn = Cast<ATankPawn>(GetPawn());
 }
 
-void ATankPlayerController::MoveForward(float AxisValue)
+void ATankPlayerController::MoveTank(const FInputActionValue& Value)
 {
-	TankPawn->MoveForward(AxisValue);
-}
-
-void ATankPlayerController::MoveRight(float AxisValue)
-{
-	TankPawn->MoveRight(AxisValue);
+	//** Value[1] = FVector Y axis */
+	TankPawn->MoveForward(Value[1]);
+	//** Value[0] = FVector X axis */
+	TankPawn->MoveRight(Value[0]);
+	//** Value[2] = FVector Z axis */
+	TankPawn->Rotate(Value[2]);
 }
 
 void ATankPlayerController::CameraZoom(float AxisValue)
