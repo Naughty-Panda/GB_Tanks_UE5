@@ -10,6 +10,7 @@
 class ATankPawn;
 class UInputAction;
 struct FInputActionValue;
+struct FInputActionInstance;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPlayerController : public APlayerController
@@ -25,17 +26,27 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
 	UInputAction* MovementInputAction;
 
+	/** Input Action Asset responsible for camera zoom in and out */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
+	UInputAction* CameraZoomInputAction;
+
 	//** Controlled Pawn */
 	UPROPERTY()
 	ATankPawn* TankPawn;
 
+	//** Player mouse position */
+	UPROPERTY()
+	FVector MousePosition;
+
 public:
 	ATankPlayerController();
+	FVector GetMousePosition() const { return MousePosition; }
 
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	void MoveTank(const FInputActionValue& Value);
-	void CameraZoom(float AxisValue);
+	void CameraZoom(const FInputActionValue& Value);
 };

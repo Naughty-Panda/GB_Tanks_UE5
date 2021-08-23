@@ -2,10 +2,12 @@
 
 
 #include "TankPawn.h"
+#include "GB_Tanks_UE5.h"
 #include "TankPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "EnhancedInputSubsystems.h"
 
@@ -50,6 +52,7 @@ void ATankPawn::MoveRight(float AxisValue)
 
 void ATankPawn::Rotate(float AxisValue)
 {
+	TargetRotationAxisValue = AxisValue;
 }
 
 void ATankPawn::CameraZoom(float AxisValue)
@@ -66,6 +69,8 @@ void ATankPawn::CameraZoom(float AxisValue)
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PlayerController = Cast<ATankPlayerController>(GetController());
 }
 
 // PawnClientRestart can run more than once in an Actor's lifetime
@@ -74,10 +79,10 @@ void ATankPawn::PawnClientRestart()
 	Super::PawnClientRestart();
 
 	// Make sure we have a valid Player Controller.
-	ATankPlayerController* PlayerController = Cast<ATankPlayerController>(GetController());
+	PlayerController = Cast<ATankPlayerController>(GetController());
 	if (!PlayerController)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Player Controller Class!"), TEXT(__FUNCTION__));
+		UE_LOG(LogTemp, Error, TEXT("%s: wrong Player Controller Class!"), TEXT(__FUNCTION__));
 		return;
 	}
 
@@ -107,8 +112,8 @@ void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Tank movement tick
 	FVector Direction = GetActorForwardVector() * TargetForwardAxisValue + GetActorRightVector() * TargetRightAxisValue;
-
 	if (!Direction.IsZero())
 	{
 		Direction.Normalize();
@@ -117,8 +122,32 @@ void ATankPawn::Tick(float DeltaTime)
 		SetActorLocation(TargetLocation, true);
 
 		// TODO: FInd a better way to reset Enhanced Input's axes.
-		TargetForwardAxisValue = 0.0f;
-		TargetRightAxisValue = 0.0f;
+		TargetForwardAxisValue = TargetRightAxisValue = 0.0f;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s: %f %f"), TEXT(__FUNCTION__), TargetForwardAxisValue, TargetRightAxisValue)
+
+	// Tank rotation tick
+	CurrentRotationAxisValue = FMath::FInterpConstantTo(CurrentRotationAxisValue, TargetRotationAxisValue, DeltaTime, TankRotInterpSpeed);
+	if (CurrentRotationAxisValue)
+	{
+		float YawRotation = CurrentRotationAxisValue * RotationSpeed * DeltaTime;
+		FRotator CurrentRotation = GetActorRotation();
+		YawRotation += CurrentRotation.Yaw;
+		FRotator NewRotation{0.0f, YawRotation, 0.0f};
+		SetActorRotation(NewRotation);
+
+		UE_LOG(LogTanks, Log, TEXT("Current %f Target %f"), CurrentRotationAxisValue, TargetRotationAxisValue);
+		TargetRotationAxisValue = 0.0f;
+	}
+
+	// Turret rotation tick
+	if (PlayerController)
+	{
+		FVector MousePosition = PlayerController->GetMousePosition();
+		float TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MousePosition).Yaw;
+		float CurrentRotation = TurretBody->GetComponentRotation().Yaw;
+		//TargetRotation.Roll = CurrentRotation.Roll;
+		//TargetRotation.Pitch = CurrentRotation.Pitch;
+		TargetRotation = FMath::FInterpConstantTo(CurrentRotation, TargetRotation, DeltaTime, TurrerRotInterpSpeed);
+		TurretBody->SetWorldRotation({0.0f, TargetRotation, 0.0f});
+	}
 }

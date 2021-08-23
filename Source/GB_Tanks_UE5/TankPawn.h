@@ -10,6 +10,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class ATankPlayerController;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public APawn
@@ -47,6 +48,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 	float RotationSpeed = 100.0f;
 
+	/** Tank rotation interpolation speed */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
+	float TankRotInterpSpeed = 1.5f;
+
+	/** Turret rotation interpolation speed */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
+	float TurrerRotInterpSpeed = 150.0f;
+
 	/** Sets camera angle */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	FRotator CameraAngle = {270.0f, 0.0f, 0.0f};
@@ -54,9 +63,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	float CameraZoomStep = 100.0f;
 
-	/** Holds forward and right input axis */
+private:
+	UPROPERTY()
+	ATankPlayerController* PlayerController;
+
+	/** Holds forward, right and rotation axes provided by user input */
 	float TargetForwardAxisValue = 0.0f;
 	float TargetRightAxisValue = 0.0f;
+	float TargetRotationAxisValue = 0.0f;
+	float CurrentRotationAxisValue = 0.0f;
 
 public:
 	// Sets default values for this pawn's properties
