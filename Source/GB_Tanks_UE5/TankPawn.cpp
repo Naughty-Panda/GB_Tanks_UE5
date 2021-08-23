@@ -2,10 +2,12 @@
 
 
 #include "TankPawn.h"
+
 #include "GB_Tanks_UE5.h"
 #include "TankPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -38,6 +40,12 @@ ATankPawn::ATankPawn()
 	// Camera
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	// Cannon components
+	CannonAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon attach point"));
+	CannonAttachPoint->AttachToComponent(TurretBody, FAttachmentTransformRules::KeepRelativeTransform);
+	//CannonAttachPoint->Mobility = EComponentMobility::Static;
+	//CannonAttachPoint->SetupAttachment(TurretBody);
 }
 
 void ATankPawn::MoveForward(float AxisValue)
@@ -65,12 +73,28 @@ void ATankPawn::CameraZoom(float AxisValue)
 	}
 }
 
+void ATankPawn::Fire(ECannonFireMode FireMode)
+{
+	if (Cannon)
+	{
+		switch (FireMode)
+		{
+		case ECannonFireMode::Single: Cannon->Fire();
+			break;
+		case ECannonFireMode::Burst: Cannon->FireSpecial();
+			break;
+		default: break;
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	PlayerController = Cast<ATankPlayerController>(GetController());
+	SetupCannon();
 }
 
 // PawnClientRestart can run more than once in an Actor's lifetime
@@ -105,6 +129,26 @@ void ATankPawn::PawnClientRestart()
 
 	// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
 	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
+}
+
+void ATankPawn::SetupCannon()
+{
+	if (Cannon)
+	{
+		Cannon->Destroy();
+		Cannon = nullptr;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = SpawnParameters.Instigator = this;
+
+	if (!CannonClass)
+	{
+		return;
+	}
+
+	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, SpawnParameters);
+	Cannon->AttachToComponent(CannonAttachPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
 // Called every frame

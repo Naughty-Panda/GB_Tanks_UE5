@@ -30,6 +30,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
 	UInputAction* CameraZoomInputAction;
 
+	/** Input Action Asset responsible for tank fire */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
+	UInputAction* TankFireInputAction;
+
+	/** Input Action Asset responsible for tank special fire */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
+	UInputAction* TankFireSpecialInputAction;
+
 	//** Controlled Pawn */
 	UPROPERTY()
 	ATankPawn* TankPawn;
@@ -49,4 +57,6 @@ protected:
 
 	void MoveTank(const FInputActionValue& Value);
 	void CameraZoom(const FInputActionValue& Value);
+	void Fire();
+	void FireSpecial();
 };

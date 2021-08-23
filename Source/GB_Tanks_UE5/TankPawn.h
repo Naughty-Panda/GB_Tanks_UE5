@@ -5,12 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
+#include "Cannon.h"
 
 #include "TankPawn.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class ATankPlayerController;
+class UArrowComponent;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public APawn
@@ -31,6 +33,13 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UArrowComponent* CannonAttachPoint;
+
+	//** Default class for tank's cannon */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	TSubclassOf<ACannon> CannonClass;
 
 	/** Input Mapping Context Asset our actor will use */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
@@ -67,6 +76,9 @@ private:
 	UPROPERTY()
 	ATankPlayerController* PlayerController;
 
+	UPROPERTY()
+	ACannon* Cannon;
+
 	/** Holds forward, right and rotation axes provided by user input */
 	float TargetForwardAxisValue = 0.0f;
 	float TargetRightAxisValue = 0.0f;
@@ -89,10 +101,15 @@ public:
 	UFUNCTION()
 	void CameraZoom(float AxisValue);
 
+	UFUNCTION()
+	void Fire(ECannonFireMode FireMode);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PawnClientRestart() override;
+
+	void SetupCannon();
 
 public:
 	// Called every frame

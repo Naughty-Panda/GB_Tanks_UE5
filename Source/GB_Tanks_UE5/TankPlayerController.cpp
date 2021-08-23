@@ -22,7 +22,7 @@ void ATankPlayerController::SetupInputComponent()
 		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Enhanced Input Component Class!"), TEXT(__FUNCTION__));
 		return;
 	}
-	if (!MovementInputAction || !CameraZoomInputAction)
+	if (!MovementInputAction || !CameraZoomInputAction || !TankFireInputAction || !TankFireSpecialInputAction)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s: Input Action Assets wasn't assigned correctly! Check BP_TankPlayerController/Input Actions."), TEXT(__FUNCTION__));
 		return;
@@ -30,6 +30,8 @@ void ATankPlayerController::SetupInputComponent()
 
 	EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ATankPlayerController::MoveTank);
 	EnhancedInputComponent->BindAction(CameraZoomInputAction, ETriggerEvent::Started, this, &ATankPlayerController::CameraZoom);
+	EnhancedInputComponent->BindAction(TankFireInputAction, ETriggerEvent::Started, this, &ATankPlayerController::Fire);
+	EnhancedInputComponent->BindAction(TankFireSpecialInputAction, ETriggerEvent::Started, this, &ATankPlayerController::FireSpecial);
 }
 
 void ATankPlayerController::BeginPlay()
@@ -67,4 +69,14 @@ void ATankPlayerController::MoveTank(const FInputActionValue& Value)
 void ATankPlayerController::CameraZoom(const FInputActionValue& Value)
 {
 	TankPawn->CameraZoom(Value[0]);
+}
+
+void ATankPlayerController::Fire()
+{
+	TankPawn->Fire(ECannonFireMode::Single);
+}
+
+void ATankPlayerController::FireSpecial()
+{
+	TankPawn->Fire(ECannonFireMode::Burst);
 }
