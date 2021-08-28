@@ -1,64 +1,48 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Cannon.h"
-#include <string>
-
+#include "GB_Tanks_UE5.h"
+#include "Projectile.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/ArrowComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ACannon::ACannon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root component"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
 	CannonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cannon mesh"));
-	//CannonMesh->SetupAttachment(RootComponent);
-	RootComponent = CannonMesh;
+	CannonMesh->SetupAttachment(RootComponent);
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Projectile spawn point"));
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
 }
 
-void ACannon::Fire()
+void ACannon::Fire(ECannonFireMode FireMode)
 {
 	if (!IsReadyToFire())
 	{
-		GEngine->AddOnScreenDebugMessage(10, 1.0f, FColor::Red, TEXT("Not ready to fire!"));
+		UE_LOG(LogTanks, Error, TEXT("Not ready to fire!"));
 		return;
 	}
 
 	bReadyToFire = false;
-	ConsumeAmmo();
+	--Ammo;
 
-	switch (CannonType)
+	UE_LOG(LogTanks, Log, TEXT("Ammo: %i/%i"), Ammo.CurrentAmmo, Ammo.MaxAmmo);
+
+	switch (FireMode)
 	{
-	case ECannonType::FireProjectile: GEngine->AddOnScreenDebugMessage(10, 1.0f, FColor::Green, TEXT("Fire mode: Projectile"));
+	case ECannonFireMode::Single: FireSingle();
 		break;
-	case ECannonType::FireTrace: GEngine->AddOnScreenDebugMessage(10, 1.0f, FColor::Blue, TEXT("Fire mode: Trace"));
-		break;
-	case ECannonType::FireCharge: GEngine->AddOnScreenDebugMessage(10, 1.0f, FColor::Magenta, TEXT("Fire mode: Charge"));
+	case ECannonFireMode::Burst: FireBurst();
 		break;
 	default: break;
 	}
-
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
-
-	const FString AmmoCounter(FString("Ammo count: ") + std::to_string(AmmoCount).c_str());
-	GEngine->AddOnScreenDebugMessage(10, 2.0f, FColor::Yellow, AmmoCounter);
-}
-
-void ACannon::FireSpecial()
-{
-	BurstFire();
-}
-
-void ACannon::BurstFire()
-{
-	// Placeholder
 }
 
 // Called when the game starts or when spawned
@@ -76,7 +60,81 @@ void ACannon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	GetWorld()->GetTimerManager().ClearTimer(BurstFireTimerHandle);
 }
 
-void ACannon::ConsumeAmmo(int32 Count)
+void ACannon::FireSingle()
 {
-	AmmoCount = FMath::Clamp(AmmoCount - Count, 0, 10);
+	switch (CannonType)
+	{
+	case ECannonType::ProjectileCannon:
+		UE_LOG(LogTanks, Warning, TEXT("Projectile"));
+		ShootProjectile();
+		break;
+	case ECannonType::TraceCannon:
+		UE_LOG(LogTanks, Warning, TEXT("Trace"));
+		ShootTrace();
+		break;
+	default: break;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRateSingle, false);
+}
+
+void ACannon::FireBurst()
+{
+	if (BurstFireShotsLeft-- != 0)
+	{
+		switch (CannonType)
+		{
+		case ECannonType::ProjectileCannon:
+			UE_LOG(LogTanks, Warning, TEXT("Projectile"));
+			ShootProjectile();
+			break;
+		case ECannonType::TraceCannon:
+			UE_LOG(LogTanks, Warning, TEXT("Trace"));
+			ShootTrace();
+			break;
+		default: break;
+		}
+
+		GetWorld()->GetTimerManager().SetTimer(BurstFireTimerHandle, this, &ACannon::FireBurst, 1 / FireRateBurst / BurstFireShots, false);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRateBurst, false);
+	}
+}
+
+void ACannon::Reload()
+{
+	bReadyToFire = true;
+	BurstFireShotsLeft = BurstFireShots;
+}
+
+void ACannon::ShootProjectile() const
+{
+	if (AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(DefaultProjectileClass, ProjectileSpawnPoint->GetComponentLocation(),
+	                                                                  ProjectileSpawnPoint->GetComponentRotation()))
+	{
+		Projectile->Start();
+	}
+}
+
+void ACannon::ShootTrace() const
+{
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
+	UE_LOG(LogTanks, Log, TEXT("TraceComplex: %i, ReturnPhysicalMaterial: %i"), TraceParams.bTraceComplex, TraceParams.bReturnPhysicalMaterial);
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
+	FVector End = ProjectileSpawnPoint->GetForwardVector() * FireRange + Start;
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility, TraceParams))
+	{
+		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor::Green, false, 2.5f, 0, 5.0f);
+		if (AActor* HitActor = HitResult.GetActor())
+		{
+			HitActor->Destroy();
+		}
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.5f, 0, 5.0f);
+	}
 }
