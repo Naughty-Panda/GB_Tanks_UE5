@@ -10,6 +10,7 @@
 
 class UStaticMeshComponent;
 class UArrowComponent;
+class AProjectile;
 
 UCLASS()
 class GB_TANKS_UE5_API ACannon : public AActor
@@ -23,8 +24,31 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ProjectileSpawnPoint;
 
+	//** Current cannon type */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
-	float FireRate = 1.0f;
+	ECannonType CannonType = ECannonType::TraceCannon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (EditCondition = "CannonType == ECannonType::ProjectileCannon", EditConditionHides),
+		Category = "Fire settings")
+	TSubclassOf<AProjectile> DefaultProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
+	FCannonAmmo Ammo;
+
+	//** Number of shots in burst fire mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
+	uint8 BurstFireShots = 3;
+
+	//** Number of shots to be fired in burst fire mode */
+	uint8 BurstFireShotsLeft = BurstFireShots;
+
+	//** Rate of fire in burst fire mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (EditCondition = "BurstFireShots > 1", EditConditionHides), Category = "Fire settings")
+	float FireRateBurst = 1.0f;
+
+	//** Fire rate in single shot mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
+	float FireRateSingle = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	float FireRange = 1000.0f;
@@ -32,32 +56,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	float FireDamage = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
-	ECannonType CannonType = ECannonType::FireTrace;
+	bool bReadyToFire = true;
 
-	//** Available ammo. TODO: Move to Actor Component class */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
-	int32 AmmoCount = 10;
-
+	//** Cannon timers */
 	FTimerHandle ReloadTimerHandle;
 	FTimerHandle BurstFireTimerHandle;
 
-	bool bReadyToFire = true;
 public:
 	// Sets default values for this actor's properties
 	ACannon();
 
-	void Fire();
-	void FireSpecial();
-	void BurstFire();
-	bool IsReadyToFire() const { return bReadyToFire && AmmoCount; }
+	void Fire(ECannonFireMode FireMode);
+	bool FORCEINLINE IsReadyToFire() const { return bReadyToFire && Ammo.HasAmmo(); }
+	void FORCEINLINE AddAmmo(uint8 Amount) { Ammo.AddAmmo(Amount); }
+	bool FORCEINLINE HasFullAmmo() const { return Ammo.HasFullAmmo(); }
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	// TODO: Move to Actor Component class
-	void Reload() { bReadyToFire = true; }
-	void ConsumeAmmo(int32 Count = 1);
+	void FireSingle();
+	void FireBurst();
+	void Reload();
+	void ShootProjectile() const;
+	void ShootTrace() const;
 };
