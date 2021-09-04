@@ -85,6 +85,11 @@ ACannon* ATankBase::GetSecondaryCannon() const
 	return SecondaryCannon;
 }
 
+void ATankBase::TakeDamage(const FDamageData& DamageData)
+{
+	UE_LOG(LogTanks, Warning, TEXT("%s taking damage: %f"), *GetName(), DamageData.DamageValue);
+}
+
 // Called when the game starts or when spawned
 void ATankBase::BeginPlay()
 {

@@ -17,6 +17,7 @@ ACannon::ACannon()
 
 	CannonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cannon mesh"));
 	CannonMesh->SetupAttachment(RootComponent);
+	CannonMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Projectile spawn point"));
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
@@ -114,6 +115,7 @@ void ACannon::ShootProjectile() const
 	if (AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(DefaultProjectileClass, ProjectileSpawnPoint->GetComponentLocation(),
 	                                                                  ProjectileSpawnPoint->GetComponentRotation()))
 	{
+		Projectile->SetInstigator(GetInstigator());
 		Projectile->Start();
 	}
 }

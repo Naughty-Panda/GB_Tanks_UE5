@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Projectile.h"
+#include "DamageTaker.h"
 #include "GB_Tanks_UE5.h"
 
 // Sets default values
@@ -40,7 +41,24 @@ void AProjectile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
                                      bool bFromSweep, const FHitResult& HitResult)
 {
 	UE_LOG(LogTanks, Warning, TEXT("%s begin overlap with %s"), *GetName(), *OtherActor->GetName());
-	OtherActor->Destroy();
+	if (OtherComponent && OtherComponent->GetCollisionObjectType() == ECC_Destructible)
+	{
+		OtherActor->Destroy();
+	}
+	else if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
+	{
+		AActor* MyInstigator = GetInstigator();
+		if (MyInstigator != OtherActor)
+		{
+			FDamageData DamageData;
+			DamageData.Instigator = MyInstigator;
+			DamageData.DamageValue = Damage;
+			DamageData.DamageDealer = this;
+
+			DamageTaker->TakeDamage(DamageData);
+		}
+	}
+
 	Destroy();
 }
 

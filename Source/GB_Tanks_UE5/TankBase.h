@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Cannon.h"
+#include "DamageTaker.h"
 
 #include "TankBase.generated.h"
 
@@ -12,7 +13,7 @@ class UArrowComponent;
 class UBoxComponent;
 
 UCLASS()
-class GB_TANKS_UE5_API ATankBase : public APawn
+class GB_TANKS_UE5_API ATankBase : public APawn, public IDamageTaker
 {
 	GENERATED_BODY()
 
@@ -77,6 +78,7 @@ public:
 	void SetupCannon(TSubclassOf<ACannon> InCannon);
 	ACannon* GetPrimaryCannon() const;
 	ACannon* GetSecondaryCannon() const;
+	virtual void TakeDamage(const FDamageData& DamageData) override;
 
 protected:
 	// Called when the game starts or when spawned
