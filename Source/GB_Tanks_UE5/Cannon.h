@@ -80,5 +80,5 @@ protected:
 	void FireBurst();
 	void Reload();
 	void ShootProjectile() const;
-	void ShootTrace() const;
+	void ShootTrace();
 };

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Cannon.h"
+#include "DamageTaker.h"
 #include "GB_Tanks_UE5.h"
 #include "Projectile.h"
 #include "Components/StaticMeshComponent.h"
@@ -120,7 +121,7 @@ void ACannon::ShootProjectile() const
 	}
 }
 
-void ACannon::ShootTrace() const
+void ACannon::ShootTrace()
 {
 	FHitResult HitResult;
 	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
@@ -132,7 +133,23 @@ void ACannon::ShootTrace() const
 		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor::Green, false, 2.5f, 0, 5.0f);
 		if (AActor* HitActor = HitResult.GetActor())
 		{
-			HitActor->Destroy();
+			if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(HitActor))
+			{
+				AActor* MyInstigator = GetInstigator();
+				if (MyInstigator != HitActor)
+				{
+					FDamageData DamageData;
+					DamageData.Instigator = MyInstigator;
+					DamageData.DamageDealer = this;
+					DamageData.DamageValue = FireDamage;
+
+					DamageTaker->TakeDamage(DamageData);
+				}
+			}
+			else
+			{
+				HitActor->Destroy();
+			}
 		}
 	}
 	else

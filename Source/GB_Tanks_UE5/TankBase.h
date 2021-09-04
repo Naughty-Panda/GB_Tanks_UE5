@@ -11,6 +11,7 @@
 
 class UArrowComponent;
 class UBoxComponent;
+class UHealthComponent;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankBase : public APawn, public IDamageTaker
@@ -36,6 +37,10 @@ public:
 	//** Default class for tank's cannon */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	TSubclassOf<ACannon> DefaultCannonClass;
+
+	//** Tank's health component */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UHealthComponent* HealthComponent;
 
 	/** Tank move speed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
@@ -83,6 +88,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void Die();
+
+	UFUNCTION()
+	void DamageTaken(float DamageValue);
 
 public:
 	// Called every frame

@@ -5,6 +5,7 @@
 #include "Cannon.h"
 #include "Components/BoxComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Components/HealthComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -25,6 +26,10 @@ ATankBase::ATankBase()
 
 	CannonAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon attachment point"));
 	CannonAttachPoint->SetupAttachment(TurretMesh);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	HealthComponent->OnDie.AddDynamic(this, &ATankBase::Die);
+	HealthComponent->OnDamaged.AddDynamic(this, &ATankBase::DamageTaken);
 }
 
 void ATankBase::MoveForward(const float AxisValue)
@@ -87,7 +92,7 @@ ACannon* ATankBase::GetSecondaryCannon() const
 
 void ATankBase::TakeDamage(const FDamageData& DamageData)
 {
-	UE_LOG(LogTanks, Warning, TEXT("%s taking damage: %f"), *GetName(), DamageData.DamageValue);
+	HealthComponent->TakeDamage(DamageData);
 }
 
 // Called when the game starts or when spawned
@@ -97,6 +102,16 @@ void ATankBase::BeginPlay()
 
 	ensure(DefaultCannonClass);
 	SetupCannon(DefaultCannonClass);
+}
+
+void ATankBase::Die()
+{
+	Destroy();
+}
+
+void ATankBase::DamageTaken(float DamageValue)
+{
+	UE_LOG(LogTanks, Warning, TEXT("%s taking damage: %f"), *GetName(), DamageValue);
 }
 
 // Called every frame
