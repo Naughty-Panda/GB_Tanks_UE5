@@ -79,6 +79,6 @@ protected:
 	void FireSingle();
 	void FireBurst();
 	void Reload();
-	void ShootProjectile() const;
+	void ShootProjectile();
 	void ShootTrace();
 };

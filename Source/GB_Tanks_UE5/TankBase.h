@@ -58,7 +58,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 	float TurrerRotInterpSpeed = 150.0f;
 
-private:
+protected:
 	//** Cannons */
 	UPROPERTY()
 	ACannon* PrimaryCannon;

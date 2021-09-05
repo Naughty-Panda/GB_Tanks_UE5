@@ -111,7 +111,7 @@ void ACannon::Reload()
 	BurstFireShotsLeft = BurstFireShots;
 }
 
-void ACannon::ShootProjectile() const
+void ACannon::ShootProjectile()
 {
 	if (AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(DefaultProjectileClass, ProjectileSpawnPoint->GetComponentLocation(),
 	                                                                  ProjectileSpawnPoint->GetComponentRotation()))
