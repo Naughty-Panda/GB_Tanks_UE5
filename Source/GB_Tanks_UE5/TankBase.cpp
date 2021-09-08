@@ -7,7 +7,10 @@
 #include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/AudioComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -209,6 +212,9 @@ void ATankBase::Destroyed()
 	{
 		SecondaryCannon->Destroy();
 	}
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestructionParticleEffect, GetActorTransform());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DestructionSound, GetActorLocation());
 }
 
 void ATankBase::Die()

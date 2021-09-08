@@ -11,6 +11,8 @@
 class USpringArmComponent;
 class UCameraComponent;
 class ATankPlayerController;
+class UCameraShakeBase;
+class UForceFeedbackEffect;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public ATankBase
@@ -23,6 +25,12 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Hit Feedback")
+	TSubclassOf<UCameraShakeBase> HitCameraShake;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Hit Feedback")
+	UForceFeedbackEffect* HitForceFeedback;
 
 	/** Input Mapping Context Asset our actor will use */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
@@ -59,6 +67,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PawnClientRestart() override;
+
+	virtual void DamageTaken(float DamageValue) override;
 
 public:
 	// Called every frame

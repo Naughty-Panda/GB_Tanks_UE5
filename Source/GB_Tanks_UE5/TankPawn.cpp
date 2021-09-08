@@ -81,6 +81,27 @@ void ATankPawn::PawnClientRestart()
 	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
 }
 
+void ATankPawn::DamageTaken(float DamageValue)
+{
+	Super::DamageTaken(DamageValue);
+
+	if (GetWorld()->GetFirstPlayerController()->GetPawn() == this)
+	{
+		if (HitForceFeedback)
+		{
+			FForceFeedbackParameters FeedbackParams;
+			FeedbackParams.bLooping = false;
+			FeedbackParams.Tag = TEXT("HitForceFeedbackParams");
+			GetWorld()->GetFirstPlayerController()->ClientPlayForceFeedback(HitForceFeedback, FeedbackParams);
+		}
+
+		if (HitCameraShake)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShake);
+		}
+	}
+}
+
 // Called every frame
 void ATankPawn::Tick(float DeltaTime)
 {

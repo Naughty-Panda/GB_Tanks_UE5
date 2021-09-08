@@ -4,7 +4,7 @@
 
 ATankBot::ATankBot()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// Allows to edit AI-related settings
 	bIsAIControlled = true;
