@@ -2,7 +2,22 @@
 
 #include "TankAIController.h"
 #include "DrawDebugHelpers.h"
+#include "GB_Tanks_UE5.h"
+#include "Engine/TargetPoint.h"
 #include "TankBot.h"
+
+void ATankAIController::TryInit()
+{
+	TankBot = Cast<ATankBot>(GetPawn());
+
+	if (TankBot)
+	{
+		MovementAccuracy = TankBot->GetMovementAccuracy();
+		PatrollingPoints = TankBot->GetPatrollingPoints();
+
+		CurrentPointIndex = PatrollingPoints.Num() == 0 ? INDEX_NONE : 0;
+	}
+}
 
 void ATankAIController::BeginPlay()
 {
@@ -10,28 +25,36 @@ void ATankAIController::BeginPlay()
 
 	PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 
-	TankBot = Cast<ATankBot>(GetPawn());
-	if (!TankBot)
-	{
-		return;
-	}
+	/* TankBot may not be created
+	 * at the Controller's BeginPlay
+	 * so we have to check this
+	 */
 
-	MovementAccuracy = TankBot->GetMovementAccuracy();
-	TArray<FVector> BotPoints = TankBot->GetPatrollingPoints();
-	const FVector CurrentLocation = TankBot->GetActorLocation();
+	TryInit();
 
-	for (const auto& Point : BotPoints)
-	{
-		const FVector NewPoint = Point + CurrentLocation;
-		PatrollingPoints.Add(NewPoint);
-	}
-
-	CurrentPointIndex = PatrollingPoints.Num() == 0 ? INDEX_NONE : 0;
+	// const TArray<ATargetPoint*> BotPoints = TankBot->GetPatrollingPoints();
+	// const FVector CurrentLocation = TankBot->GetActorLocation();
+	//
+	// for (const auto Point : BotPoints)
+	// {
+	// 	const FVector NewPoint = Point->GetActorLocation();
+	// 	PatrollingPoints.Add(NewPoint);
+	// }
 }
 
 void ATankAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (!TankBot)
+	{
+		TryInit();
+
+		if (!TankBot)
+		{
+			return;
+		}
+	}
 
 	// Movement tick
 	if (CurrentPointIndex == INDEX_NONE)
@@ -52,7 +75,14 @@ void ATankAIController::Tick(float DeltaSeconds)
 
 float ATankAIController::CalculateMovementRotation()
 {
-	const FVector CurrentPoint = PatrollingPoints[CurrentPointIndex];
+	if (CurrentPointIndex == INDEX_NONE)
+	{
+		UE_LOG(LogTanks, Error, TEXT("%s has no Current Waypoint Index! Array size: %d"), *GetName(), PatrollingPoints.Num());
+		return 0.f;
+	}
+
+	const ATargetPoint* CurrentPointPtr = PatrollingPoints[CurrentPointIndex];
+	const FVector CurrentPoint = CurrentPointPtr->GetActorLocation();
 	const FVector PawnLocation = TankBot->GetActorLocation();
 
 	if (FVector::Distance(PawnLocation, CurrentPoint) < MovementAccuracy)

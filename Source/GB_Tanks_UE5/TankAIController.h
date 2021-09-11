@@ -9,6 +9,7 @@
 #include "TankAIController.generated.h"
 
 class ATankPawn;
+class ATargetPoint;
 
 /**
  * 
@@ -22,19 +23,22 @@ protected:
 	//** Player Pawn */
 	UPROPERTY()
 	APawn* PlayerPawn;
+
 	//** Controlled bot */
 	UPROPERTY()
 	ATankBot* TankBot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (MakeEditWidget = 1), Category="AI|Move params")
-	TArray<FVector> PatrollingPoints;
+	TArray<ATargetPoint*> PatrollingPoints;
+	//TArray<FVector> PatrollingPoints;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI|Move params")
 	float MovementAccuracy;
 
-	uint8 CurrentPointIndex = INDEX_NONE;
+	int32 CurrentPointIndex = INDEX_NONE;
 
 protected:
+	void TryInit();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
