@@ -58,6 +58,11 @@ void AProjectile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 			DamageTaker->TakeDamage(DamageData);
 		}
 	}
+	else if (OtherComponent && OtherComponent->IsSimulatingPhysics())
+	{
+		const FVector ForceVector = GetActorForwardVector();
+		OtherComponent->AddImpulseAtLocation(ForceVector * PushImpulse, HitResult.ImpactPoint);
+	}
 
 	Destroy();
 }

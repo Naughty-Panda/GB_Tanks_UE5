@@ -27,6 +27,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	float Damage = 1.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
+	float PushImpulse = 1000.0f;
+
 private:
 	FTimerHandle MovementTimerHandle;
 
