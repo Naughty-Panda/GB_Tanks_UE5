@@ -37,7 +37,7 @@ public:
 	// Sets default values for this actor's properties
 	AProjectile();
 
-	void Start();
+	virtual void Start();
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,5 +53,5 @@ protected:
 		bool bFromSweep,
 		const FHitResult& HitResult
 	);
-	void Move();
+	virtual void Move();
 };
