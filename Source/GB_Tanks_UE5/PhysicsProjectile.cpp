@@ -48,6 +48,7 @@ void APhysicsProjectile::Move()
 
 		if (TrajectoryPointIndex >= CurrentTrajectory.Num())
 		{
+			Explode();
 			Destroy();
 		}
 		else

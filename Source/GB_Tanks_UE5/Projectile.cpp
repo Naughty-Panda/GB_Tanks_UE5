@@ -23,6 +23,73 @@ void AProjectile::Start()
 	SetLifeSpan(FlyRange / MoveSpeed);
 }
 
+void AProjectile::Explode()
+{
+	if (!bCanExplode)
+	{
+		return;
+	}
+
+	const FVector StartPos = GetActorLocation();
+	const FVector EndPos = StartPos + FVector(0.1f);
+
+	const FCollisionShape Shape = FCollisionShape::MakeSphere(ExplodeRadius);
+	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
+	Params.AddIgnoredActor(this);
+	Params.bTraceComplex = true;
+	Params.TraceTag = TEXT("Explode trace");
+
+	TArray<FHitResult> AttackHit;
+
+	const FQuat Rotation = FQuat::Identity;
+
+	const bool SweepResult = GetWorld()->SweepMultiByChannel
+	(
+		AttackHit,
+		StartPos,
+		EndPos,
+		Rotation,
+		ECollisionChannel::ECC_Visibility,
+		Shape,
+		Params
+	);
+
+	GetWorld()->DebugDrawTraceTag = "Projectile Explode trace";
+
+	if (SweepResult)
+	{
+		for (const auto& HitResult : AttackHit)
+		{
+			AActor* OtherActor = HitResult.GetActor();
+			if (!OtherActor)
+			{
+				continue;
+			}
+
+			IDamageTaker* DamageTakerActor = Cast<IDamageTaker>(OtherActor);
+			if (DamageTakerActor)
+			{
+				FDamageData DamageData;
+				DamageData.DamageValue = Damage;
+				DamageData.Instigator = GetOwner();
+				DamageData.DamageDealer = this;
+
+				DamageTakerActor->TakeDamage(DamageData);
+			}
+			else
+			{
+				UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+				if (PrimComp && PrimComp->IsSimulatingPhysics())
+				{
+					FVector ForceVector = OtherActor->GetActorLocation() - GetActorLocation();
+					ForceVector.Normalize();
+					PrimComp->AddImpulse(ForceVector * PushImpulse, NAME_None, true);
+				}
+			}
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
 {
@@ -64,6 +131,7 @@ void AProjectile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 		OtherComponent->AddImpulseAtLocation(ForceVector * PushImpulse, HitResult.ImpactPoint);
 	}
 
+	Explode();
 	Destroy();
 }
 

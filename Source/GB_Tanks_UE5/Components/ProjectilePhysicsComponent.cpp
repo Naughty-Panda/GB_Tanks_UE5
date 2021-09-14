@@ -16,11 +16,11 @@ TArray<FVector> UProjectilePhysicsComponent::GenerateTrajectory(const FVector& S
                                                      float MaxTime, float TimeStep, float MinZVal /*= 0.f */)
 {
 	TArray<FVector> Trajectory;
-	FVector GravityVector(0.f, 0.f, Gravity);
+	const FVector GravityVector(0.f, 0.f, Gravity);
 
 	for (float Time = 0.f; Time < MaxTime; Time += TimeStep)
 	{
-		FVector Position = StartPos + (Velocity * Time) + (Gravity * Time * Time / 2);
+		FVector Position = StartPos + (Velocity * Time) + (GravityVector * Time * Time / 2);
 
 		if (Position.Z < MinZVal)
 		{

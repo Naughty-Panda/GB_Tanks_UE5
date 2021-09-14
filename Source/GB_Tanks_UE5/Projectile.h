@@ -30,6 +30,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	float PushImpulse = 1000.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Explosion")
+	bool bCanExplode = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Explosion", meta = (EditCondition = "bCanExplode", EditConditionHides))
+	float ExplodeRadius = 50.0f;
+
 private:
 	FTimerHandle MovementTimerHandle;
 
@@ -38,6 +44,7 @@ public:
 	AProjectile();
 
 	virtual void Start();
+	virtual void Explode();
 
 protected:
 	// Called when the game starts or when spawned
