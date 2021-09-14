@@ -37,7 +37,7 @@ void AProjectile::Explode()
 	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
 	Params.AddIgnoredActor(this);
 	Params.bTraceComplex = true;
-	Params.TraceTag = TEXT("Explode trace");
+	Params.TraceTag = TEXT("Projectile Explode trace");
 
 	TArray<FHitResult> AttackHit;
 
@@ -54,7 +54,7 @@ void AProjectile::Explode()
 		Params
 	);
 
-	GetWorld()->DebugDrawTraceTag = "Projectile Explode trace";
+	GetWorld()->DebugDrawTraceTag = TEXT("Projectile Explode trace");
 
 	if (SweepResult)
 	{
