@@ -5,10 +5,19 @@
 #include "EnhancedInputComponent.h"
 #include "TankPawn.h"
 #include "DrawDebugHelpers.h"
+#include "Blueprint/UserWidget.h"
 
 ATankPlayerController::ATankPlayerController()
 {
 	bShowMouseCursor = true;
+}
+
+void ATankPlayerController::InitGameOver()
+{
+	if (UUserWidget* GameOverWidget = CreateWidget(this, DefaultGameOverWidgetClass, TEXT("GameOver")))
+	{
+		GameOverWidget->AddToViewport();
+	}
 }
 
 void ATankPlayerController::SetupInputComponent()

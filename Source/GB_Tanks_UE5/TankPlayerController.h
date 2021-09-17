@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "TankPawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Blueprint/UserWidget.h"
 
 #include "TankPlayerController.generated.h"
 
@@ -43,6 +44,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
 	UInputAction* TankSwitchCannonInputAction;
 
+	/** Widget class for the Game Over screen */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> DefaultGameOverWidgetClass;
+
 	//** Controlled Pawn */
 	UPROPERTY()
 	ATankPawn* TankPawn;
@@ -54,6 +59,7 @@ protected:
 public:
 	ATankPlayerController();
 	FVector GetMousePosition() const { return MousePosition; }
+	void InitGameOver();
 
 protected:
 	virtual void SetupInputComponent() override;
