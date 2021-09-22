@@ -13,13 +13,18 @@ class GB_TANKS_UE5_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, DamageValue);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, float, DamageValue);
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, MaxHealth, float, CurrentHealth);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDie);
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnDamaged;
+	FOnDamaged OnDamaged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnDie OnDie;

@@ -19,19 +19,23 @@ void UHealthComponent::TakeDamage(const FDamageData& DamageData)
 	const float TakenDamage = DamageData.DamageValue;
 	CurrentHealth -= TakenDamage;
 
-	if (CurrentHealth < 0.0f)
+	if (CurrentHealth <= 0.0f)
 	{
 		if (OnDie.IsBound())
 		{
 			OnDie.Broadcast();
+			return;
 		}
 	}
-	else
+
+	if (OnDamaged.IsBound())
 	{
-		if (OnDamaged.IsBound())
-		{
-			OnDamaged.Broadcast(TakenDamage);
-		}
+		OnDamaged.Broadcast(TakenDamage);
+	}
+
+	if (OnHealthChanged.IsBound())
+	{
+		OnHealthChanged.Broadcast(MaxHealth, CurrentHealth);
 	}
 }
 
