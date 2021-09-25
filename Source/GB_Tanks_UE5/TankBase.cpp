@@ -30,7 +30,6 @@ ATankBase::ATankBase()
 
 	VisibilityRange = CreateDefaultSubobject<USphereComponent>(TEXT("Field of view"));
 	VisibilityRange->SetupAttachment(RootComponent);
-	VisibilityRange->SetGenerateOverlapEvents(false);
 	VisibilityRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	VisibilityRange->SetCollisionObjectType(ECC_WorldDynamic);
 	VisibilityRange->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -41,12 +40,12 @@ ATankBase::ATankBase()
 	CannonAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon attachment point"));
 	CannonAttachPoint->SetupAttachment(TurretMesh);
 
-	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
-	HealthBar->SetupAttachment(RootComponent);
-	HealthBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	HealthBar->SetGenerateOverlapEvents(false);
-	HealthBar->AddRelativeLocation({-300.f, 0.f, 450.f});
-	HealthBar->SetRelativeRotation({-270.f, 0.f, 0.f});
+	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
+	HealthBarComponent->SetupAttachment(RootComponent);
+	HealthBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HealthBarComponent->SetGenerateOverlapEvents(false);
+	HealthBarComponent->AddRelativeLocation({-300.f, 0.f, 450.f});
+	HealthBarComponent->SetRelativeRotation({-270.f, 0.f, 0.f});
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	HealthComponent->OnDie.AddDynamic(this, &ATankBase::Die);
@@ -200,7 +199,7 @@ void ATankBase::BeginPlay()
 	ensure(DefaultCannonClass);
 	SetupCannon(DefaultCannonClass);
 
-	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetWidget()))
+	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBarComponent->GetWidget()))
 	{
 		HealthBarWidget->UpdateHealthBar(1.f);
 	}
@@ -248,7 +247,7 @@ void ATankBase::OnHealthChanged(float MaxHealth, float CurrentHealth)
 {
 	const float HealthRatio = CurrentHealth / MaxHealth;
 
-	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetWidget()))
+	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBarComponent->GetWidget()))
 	{
 		HealthBarWidget->UpdateHealthBar(HealthRatio);
 	}

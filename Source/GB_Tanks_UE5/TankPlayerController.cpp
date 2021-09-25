@@ -6,18 +6,29 @@
 #include "TankPawn.h"
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/UIManager.h"
 
 ATankPlayerController::ATankPlayerController()
 {
 	bShowMouseCursor = true;
 }
 
-void ATankPlayerController::InitGameOver()
+void ATankPlayerController::InitGameOver() const
 {
-	if (UUserWidget* GameOverWidget = CreateWidget(this, DefaultGameOverWidgetClass, TEXT("GameOver")))
+	/*if (UUserWidget* GameOverWidget = CreateWidget(this, DefaultGameOverWidgetClass, TEXT("GameOver")))
 	{
 		GameOverWidget->AddToViewport();
+	}*/
+
+	if (AUIManager* UIManager = GetUIManager())
+	{
+		UIManager->SetActiveWidget(EWidgetType::WT_GameOverMenu);
 	}
+}
+
+AUIManager* ATankPlayerController::GetUIManager() const
+{
+	return Cast<AUIManager>(GetHUD());
 }
 
 void ATankPlayerController::SetupInputComponent()

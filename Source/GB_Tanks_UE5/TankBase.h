@@ -45,9 +45,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	TSubclassOf<ACannon> DefaultCannonClass;
 
-	/** Widget for tank's Health Bar */
+	/** Component that holds widget for tank's Health Bar */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
-	UWidgetComponent* HealthBar;
+	UWidgetComponent* HealthBarComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
 	UParticleSystem* DestructionParticleEffect;

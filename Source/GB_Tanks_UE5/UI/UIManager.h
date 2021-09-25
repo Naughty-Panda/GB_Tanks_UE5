@@ -30,7 +30,9 @@ public:
 	AUIManager();
 	virtual void BeginPlay() override;
 
-	void AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder = 0);
+	UFUNCTION(BlueprintCallable, Category="UI")
 	void SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrder = 0);
+	
+	void AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder = 0);
 	void RemoveActiveWidget();
 };

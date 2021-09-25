@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UIManager.h"
-
-#include <Blueprint/UserWidget.h>
+#include "Blueprint/UserWidget.h"
 
 AUIManager::AUIManager()
 {
@@ -12,17 +11,6 @@ AUIManager::AUIManager()
 void AUIManager::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void AUIManager::AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder)
-{
-	RemoveActiveWidget();
-
-	ActiveWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), WidgetClass);
-	if (ActiveWidget)
-	{
-		ActiveWidget->AddToViewport(ZOrder);
-	}
 }
 
 void AUIManager::SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrder)
@@ -36,6 +24,17 @@ void AUIManager::SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrde
 	{
 		AddWidgetByClass(*WidgetClass, ZOrder);
 		ActiveWidgetType = WidgetType;
+	}
+}
+
+void AUIManager::AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder)
+{
+	RemoveActiveWidget();
+
+	ActiveWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), WidgetClass);
+	if (ActiveWidget)
+	{
+		ActiveWidget->AddToViewport(ZOrder);
 	}
 }
 

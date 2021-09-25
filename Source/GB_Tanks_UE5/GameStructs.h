@@ -34,8 +34,8 @@ enum class EWidgetType : uint8
 {
 	WT_None,
 	WT_MainMenu,
-	WT_PauseMenu,
-	WT_OptionsMenu
+	WT_OptionsMenu,
+	WT_GameOverMenu
 };
 
 USTRUCT(BlueprintType)
