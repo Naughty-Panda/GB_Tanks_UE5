@@ -27,6 +27,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	float Damage = 1.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
+	float PushImpulse = 1000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Explosion")
+	bool bCanExplode = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Explosion", meta = (EditCondition = "bCanExplode", EditConditionHides))
+	float ExplodeRadius = 50.0f;
+
 private:
 	FTimerHandle MovementTimerHandle;
 
@@ -34,7 +43,8 @@ public:
 	// Sets default values for this actor's properties
 	AProjectile();
 
-	void Start();
+	virtual void Start();
+	virtual void Explode();
 
 protected:
 	// Called when the game starts or when spawned
@@ -50,5 +60,5 @@ protected:
 		bool bFromSweep,
 		const FHitResult& HitResult
 	);
-	void Move();
+	virtual void Move();
 };

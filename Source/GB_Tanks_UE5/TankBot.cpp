@@ -8,9 +8,11 @@ ATankBot::ATankBot()
 
 	// Allows to edit AI-related settings
 	bIsAIControlled = true;
+
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-const TArray<FVector>& ATankBot::GetPatrollingPoints() const
+const TArray<ATargetPoint*>& ATankBot::GetPatrollingPoints() const
 {
 	return PatrollingPoints;
 }
@@ -18,4 +20,9 @@ const TArray<FVector>& ATankBot::GetPatrollingPoints() const
 float ATankBot::GetMovementAccuracy() const
 {
 	return MovementAccuracy;
+}
+
+void ATankBot::SetPatrollingPoints(const TArray<ATargetPoint*>& NewPoints)
+{
+	PatrollingPoints = NewPoints;
 }
