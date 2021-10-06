@@ -116,6 +116,13 @@ void ATankPawn::PawnClientRestart()
 	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
 }
 
+void ATankPawn::Destroyed()
+{
+	Super::Destroyed();
+
+	PlayerController->InitGameOver();
+}
+
 void ATankPawn::DamageTaken(float DamageValue)
 {
 	Super::DamageTaken(DamageValue);
