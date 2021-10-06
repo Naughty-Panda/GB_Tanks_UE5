@@ -15,11 +15,6 @@ ATankPlayerController::ATankPlayerController()
 
 void ATankPlayerController::InitGameOver() const
 {
-	/*if (UUserWidget* GameOverWidget = CreateWidget(this, DefaultGameOverWidgetClass, TEXT("GameOver")))
-	{
-		GameOverWidget->AddToViewport();
-	}*/
-
 	if (AUIManager* UIManager = GetUIManager())
 	{
 		UIManager->SetActiveWidget(EWidgetType::WT_GameOverMenu);
@@ -67,7 +62,7 @@ void ATankPlayerController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	FVector MouseDirecion;
-	FVector PawnPosition = TankPawn->GetActorLocation();
+	const FVector PawnPosition = TankPawn->GetActorLocation();
 	DeprojectMousePositionToWorld(MousePosition, MouseDirecion);
 	MousePosition.Z = PawnPosition.Z;
 	FVector Direction = MousePosition - PawnPosition;
@@ -75,6 +70,14 @@ void ATankPlayerController::Tick(float DeltaSeconds)
 	MousePosition = PawnPosition + Direction * 1000.0f;
 
 	DrawDebugLine(GetWorld(), PawnPosition, MousePosition, FColor::Green, false, 0.1f, 0.0f, 5.0f);
+
+	// TODO: Should be moved into UIManager.
+	// Update player position on minimap.
+	if (AUIManager* UIManager = GetUIManager())
+	{
+		const FVector2D PlayerPosition(PawnPosition.X, PawnPosition.Y);
+		UIManager->UpdatePlayerPositionOnMinimap(PlayerPosition);
+	}
 }
 
 void ATankPlayerController::MoveTank(const FInputActionValue& Value)
