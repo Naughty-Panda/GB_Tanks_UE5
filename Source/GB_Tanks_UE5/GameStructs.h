@@ -16,8 +16,8 @@ enum class EInputAxis : uint8
 UENUM(BlueprintType)
 enum class ECannonType : uint8
 {
-	ProjectileCannon = 0 UMETA(DisplayName = "Use projectiles"),
-	TraceCannon = 1 UMETA(DisplayName = "Use traces"),
+	FireProjectile = 0 UMETA(DisplayName = "Use projectile"),
+	FireTrace = 1 UMETA(DisplayName = "Use trace"),
 	FireCharge = 2 UMETA(DisplayName = "Use charge trace"),
 };
 
@@ -27,57 +27,4 @@ enum class ECannonFireMode : uint8
 	Single = 0 UMETA(DisplayName = "Single shot"),
 	Burst = 1 UMETA(DisplayName = "Burst fire"),
 	Charge = 2 UMETA(DisplayName = "Requires charging a shot"),
-};
-
-USTRUCT(BlueprintType)
-struct FCannonAmmo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
-	int32 MaxAmmo = 25;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
-	int32 CurrentAmmo = MaxAmmo;
-
-	FCannonAmmo& operator++()
-	{
-		CurrentAmmo = FMath::Clamp(++CurrentAmmo, 0, MaxAmmo);
-		return *this;
-	}
-
-	FCannonAmmo operator++(int)
-	{
-		FCannonAmmo Out = *this;
-		++*this;
-		return Out;
-	}
-
-	FCannonAmmo& operator--()
-	{
-		CurrentAmmo = FMath::Clamp(--CurrentAmmo, 0, MaxAmmo);
-		return *this;
-	}
-
-	FCannonAmmo operator--(int)
-	{
-		FCannonAmmo Out = *this;
-		--*this;
-		return Out;
-	}
-
-	bool FORCEINLINE HasAmmo() const
-	{
-		return CurrentAmmo > 0;
-	}
-
-	void FORCEINLINE AddAmmo(uint8 Amount)
-	{
-		CurrentAmmo = FMath::Clamp(CurrentAmmo + Amount, 0, MaxAmmo);
-	}
-
-	bool FORCEINLINE HasFullAmmo() const
-	{
-		return CurrentAmmo == MaxAmmo;
-	}
 };
