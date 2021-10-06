@@ -3,8 +3,8 @@
 #include "TankPawn.h"
 #include "TankPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputSubsystems.h"
 
 // Sets default values
@@ -12,6 +12,8 @@ ATankPawn::ATankPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	bIsAIControlled = false;
 
 	//SpringArm
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring arm"));
@@ -79,6 +81,27 @@ void ATankPawn::PawnClientRestart()
 	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
 }
 
+void ATankPawn::DamageTaken(float DamageValue)
+{
+	Super::DamageTaken(DamageValue);
+
+	if (GetWorld()->GetFirstPlayerController()->GetPawn() == this)
+	{
+		if (HitForceFeedback)
+		{
+			FForceFeedbackParameters FeedbackParams;
+			FeedbackParams.bLooping = false;
+			FeedbackParams.Tag = TEXT("HitForceFeedbackParams");
+			GetWorld()->GetFirstPlayerController()->ClientPlayForceFeedback(HitForceFeedback, FeedbackParams);
+		}
+
+		if (HitCameraShake)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShake);
+		}
+	}
+}
+
 // Called every frame
 void ATankPawn::Tick(float DeltaTime)
 {
@@ -87,13 +110,7 @@ void ATankPawn::Tick(float DeltaTime)
 	// Turret rotation tick
 	if (PlayerController)
 	{
-		FVector CurrentLocation = GetActorLocation();
-		FVector MousePosition = PlayerController->GetMousePosition();
-		float TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, MousePosition).Yaw;
-		float CurrentRotation = TurretMesh->GetComponentRotation().Yaw;
-		//TargetRotation.Roll = CurrentRotation.Roll;
-		//TargetRotation.Pitch = CurrentRotation.Pitch;
-		TargetRotation = FMath::FInterpConstantTo(CurrentRotation, TargetRotation, DeltaTime, TurrerRotInterpSpeed);
-		TurretMesh->SetWorldRotation({0.0f, TargetRotation, 0.0f});
+		const FVector MousePosition = PlayerController->GetMousePosition();
+		RotateTurretTo(MousePosition);
 	}
 }

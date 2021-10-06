@@ -11,7 +11,10 @@
 
 class UArrowComponent;
 class UBoxComponent;
+class USphereComponent;
 class UHealthComponent;
+class UParticleSystem;
+class USoundBase;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankBase : public APawn, public IDamageTaker
@@ -19,9 +22,12 @@ class GB_TANKS_UE5_API ATankBase : public APawn, public IDamageTaker
 	GENERATED_BODY()
 
 public:
-	//** Main collider for the turret */
+	/** Main collider for the turret */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UBoxComponent* Collider;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	USphereComponent* VisibilityRange;
 
 	/** Body mesh component */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
@@ -34,11 +40,17 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* CannonAttachPoint;
 
-	//** Default class for tank's cannon */
+	/** Default class for tank's cannon */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	TSubclassOf<ACannon> DefaultCannonClass;
 
-	//** Tank's health component */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
+	UParticleSystem* DestructionParticleEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
+	USoundBase* DestructionSound;
+
+	/** Tank's health component */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UHealthComponent* HealthComponent;
 
@@ -59,11 +71,26 @@ public:
 	float TurrerRotInterpSpeed = 150.0f;
 
 protected:
-	//** Cannons */
+	/** Cannons */
 	UPROPERTY()
 	ACannon* PrimaryCannon;
 	UPROPERTY()
 	ACannon* SecondaryCannon;
+
+	/** Targeting params for AI controlled pawns */
+	UPROPERTY()
+	bool bIsAIControlled = false;
+
+	bool bIsTargetInRange = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Targeting", meta = (EditCondition = "bIsAIControlled", EditConditionHides))
+	float TargetingRange = 3000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Targeting", meta = (EditCondition = "bIsAIControlled", EditConditionHides))
+	float TargetingRate = 0.05f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Targeting", meta = (EditCondition = "bIsAIControlled", EditConditionHides))
+	float TargetingAccuracy = 10.0f;
 
 	/** Holds forward, right and rotation axes provided by user input */
 	float TargetForwardAxisValue = 0.0f;
@@ -78,6 +105,10 @@ public:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
 	void Rotate(float AxisValue);
+	bool IsAimedAtLocation(const FVector& TargetLocation) const;
+	// bool IsTargetInRange(const APawn* Target) const;
+	bool HasLineOfSightOnTarget(const APawn* Target) const;
+	void LockOnTarget(const APawn* Target);
 	void Fire(ECannonFireMode FireMode);
 	void SwitchCannon();
 	void SetupCannon(TSubclassOf<ACannon> InCannon);
@@ -85,15 +116,30 @@ public:
 	ACannon* GetSecondaryCannon() const;
 	virtual void TakeDamage(const FDamageData& DamageData) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Turret")
+	FVector GetTurretForwardVector() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Turret")
+	void RotateTurretTo(const FVector& TargetPosition);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 
 	UFUNCTION()
 	void Die();
 
 	UFUNCTION()
-	void DamageTaken(float DamageValue);
+	virtual void DamageTaken(float DamageValue);
+
+	UFUNCTION()
+	void OnEnteringVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	                               bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnLeavingVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 public:
 	// Called every frame

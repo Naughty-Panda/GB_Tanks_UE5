@@ -13,15 +13,6 @@ class GB_TANKS_UE5_API ATurret : public ATankBase
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
-	float TargetingRange = 3000.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
-	float TargetingRate = 0.05f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
-	float TargetingAccuracy = 10.0f;
-
 	UPROPERTY()
 	APawn* PlayerPawn;
 
@@ -39,10 +30,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
 
 	void Targeting();
-	bool IsPlayerInRange() const;
-	bool CanFire() const;
-	void RotateToPlayer();
 };

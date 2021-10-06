@@ -4,9 +4,14 @@
 #include "GB_Tanks_UE5.h"
 #include "Cannon.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/AudioComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ATankBase::ATankBase()
@@ -20,6 +25,11 @@ ATankBase::ATankBase()
 	Collider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
 	Collider->SetupAttachment(RootComponent);
 
+	VisibilityRange = CreateDefaultSubobject<USphereComponent>(TEXT("Field of view"));
+	VisibilityRange->SetupAttachment(RootComponent);
+	VisibilityRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisibilityRange->SetCollisionObjectType(ECC_WorldDynamic);
+	VisibilityRange->SetCollisionResponseToAllChannels(ECR_Ignore);
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Turret mesh"));
 	TurretMesh->SetupAttachment(BodyMesh);
@@ -45,6 +55,67 @@ void ATankBase::MoveRight(const float AxisValue)
 void ATankBase::Rotate(const float AxisValue)
 {
 	TargetRotationAxisValue = AxisValue;
+}
+
+/**
+* Compares Direction to Target with current direction of a cannon
+* @param TargetLocation Location of a target
+*/
+bool ATankBase::IsAimedAtLocation(const FVector& TargetLocation) const
+{
+	const FVector TargetingDirection = TurretMesh->GetForwardVector();
+	FVector DirectionToTarget = TargetLocation - GetActorLocation();
+	DirectionToTarget.Normalize();
+	const float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetingDirection, DirectionToTarget)));
+	return AimAngle < TargetingAccuracy;
+}
+
+bool ATankBase::HasLineOfSightOnTarget(const APawn* Target) const
+{
+	//const APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	const FVector TargetPosition = Cast<ATankBase>(Target)->TurretMesh->GetComponentLocation();
+	const FVector PawnPosition = TurretMesh->GetComponentLocation();
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams(FName(TEXT("Visibility Trace")), false, this);
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, PawnPosition, TargetPosition, ECC_Visibility, TraceParams);
+
+	if (HitResult.GetActor())
+	{
+		DrawDebugLine(GetWorld(), PawnPosition, HitResult.Location, FColor::Cyan, false, 0.5f, 1, 15.0f);
+		return HitResult.GetActor() == Target;
+	}
+
+	DrawDebugLine(GetWorld(), PawnPosition, TargetPosition, FColor::Orange, false, 0.5f, 1, 15.0f);
+	return false;
+}
+
+/*bool ATankBase::IsTargetInRange(const APawn* Target) const
+{
+	return FVector::Distance(Target->GetActorLocation(), GetActorLocation()) < TargetingRange;
+}*/
+
+/**
+* Locks on target if it is in range and shoots if a cannon is aimed
+* @param Target APawn* to a target
+*/
+void ATankBase::LockOnTarget(const APawn* Target)
+{
+	//if (IsTargetInRange(Target))
+	if (bIsTargetInRange)
+	{
+		if (HasLineOfSightOnTarget(Target))
+		{
+			const FVector TargetLocation = Target->GetActorLocation();
+			RotateTurretTo(TargetLocation);
+
+			if (IsAimedAtLocation(TargetLocation) && PrimaryCannon && PrimaryCannon->IsReadyToFire())
+			{
+				PrimaryCannon->Fire(ECannonFireMode::Single);
+			}
+		}
+	}
 }
 
 void ATankBase::Fire(const ECannonFireMode FireMode)
@@ -95,6 +166,20 @@ void ATankBase::TakeDamage(const FDamageData& DamageData)
 	HealthComponent->TakeDamage(DamageData);
 }
 
+FVector ATankBase::GetTurretForwardVector() const
+{
+	return TurretMesh->GetForwardVector();
+}
+
+void ATankBase::RotateTurretTo(const FVector& TargetPosition)
+{
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPosition);
+	const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+	TargetRotation.Pitch = CurrentRotation.Pitch;
+	TargetRotation.Roll = CurrentRotation.Roll;
+	TurretMesh->SetWorldRotation(FMath::RInterpConstantTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurrerRotInterpSpeed));
+}
+
 // Called when the game starts or when spawned
 void ATankBase::BeginPlay()
 {
@@ -102,6 +187,34 @@ void ATankBase::BeginPlay()
 
 	ensure(DefaultCannonClass);
 	SetupCannon(DefaultCannonClass);
+
+	// Setting up visibility range Sphere Component for AI controlled pawns
+	if (bIsAIControlled)
+	{
+		VisibilityRange->SetSphereRadius(TargetingRange);
+		VisibilityRange->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		VisibilityRange->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		VisibilityRange->OnComponentBeginOverlap.AddDynamic(this, &ATankBase::OnEnteringVisibilityRange);
+		VisibilityRange->OnComponentEndOverlap.AddDynamic(this, &ATankBase::OnLeavingVisibilityRange);
+	}
+}
+
+void ATankBase::Destroyed()
+{
+	Super::Destroyed();
+
+	if (PrimaryCannon)
+	{
+		PrimaryCannon->Destroy();
+	}
+
+	if (SecondaryCannon)
+	{
+		SecondaryCannon->Destroy();
+	}
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestructionParticleEffect, GetActorTransform());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DestructionSound, GetActorLocation());
 }
 
 void ATankBase::Die()
@@ -114,6 +227,25 @@ void ATankBase::DamageTaken(float DamageValue)
 	UE_LOG(LogTanks, Warning, TEXT("%s taking damage: %f"), *GetName(), DamageValue);
 }
 
+void ATankBase::OnEnteringVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                          bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		UE_LOG(LogTanks, Warning, TEXT("Player begin overlap..."));
+		bIsTargetInRange = true;
+	}
+}
+
+void ATankBase::OnLeavingVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		UE_LOG(LogTanks, Warning, TEXT("Player end overlap..."));
+		bIsTargetInRange = false;
+	}
+}
+
 // Called every frame
 void ATankBase::Tick(float DeltaTime)
 {
@@ -124,19 +256,11 @@ void ATankBase::Tick(float DeltaTime)
 		return;
 	}
 
-	FVector CurrentLocation = GetActorLocation();
+	const FVector CurrentLocation = GetActorLocation();
 
-	// Turret rotation tick
-	/*if (PlayerController)
-	{
-		FVector MousePosition = PlayerController->GetMousePosition();
-		float TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, MousePosition).Yaw;
-		float CurrentRotation = TurretMesh->GetComponentRotation().Yaw;
-		//TargetRotation.Roll = CurrentRotation.Roll;
-		//TargetRotation.Pitch = CurrentRotation.Pitch;
-		TargetRotation = FMath::FInterpConstantTo(CurrentRotation, TargetRotation, DeltaTime, TurrerRotInterpSpeed);
-		TurretMesh->SetWorldRotation({0.0f, TargetRotation, 0.0f});
-	}*/
+	// Turret rotation tick is handled by its children!
+	// Stationary Turret has a timer for targeting,
+	// TankBot allows TankAIController to track targets.
 
 	// Movement tick
 	FVector Direction = GetActorForwardVector() * TargetForwardAxisValue + GetActorRightVector() * TargetRightAxisValue;

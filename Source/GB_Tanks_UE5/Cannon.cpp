@@ -7,6 +7,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -22,6 +24,22 @@ ACannon::ACannon()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Projectile spawn point"));
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
+
+	ProjectileShootEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Projectile Shoot Effect"));
+	ProjectileShootEffect->SetupAttachment(ProjectileSpawnPoint);
+	ProjectileShootEffect->bAutoActivate = false;
+
+	TraceShootEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Trace Shoot Effect"));
+	TraceShootEffect->SetupAttachment(ProjectileSpawnPoint);
+	TraceShootEffect->bAutoActivate = false;
+
+	ProjectileAudioEffect = CreateDefaultSubobject<UAudioComponent>(TEXT("Projectile Audio Effect"));
+	ProjectileAudioEffect->SetupAttachment(ProjectileSpawnPoint);
+	ProjectileAudioEffect->bAutoActivate = false;
+
+	TraceAudioEffect = CreateDefaultSubobject<UAudioComponent>(TEXT("Trace Audio Effect"));
+	TraceAudioEffect->SetupAttachment(ProjectileSpawnPoint);
+	TraceAudioEffect->bAutoActivate = false;
 }
 
 void ACannon::Fire(ECannonFireMode FireMode)
@@ -118,6 +136,15 @@ void ACannon::ShootProjectile()
 	{
 		Projectile->SetInstigator(GetInstigator());
 		Projectile->Start();
+
+		ProjectileShootEffect->ActivateSystem();
+		ProjectileAudioEffect->Play();
+
+		if (GetOwner() && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			PlayForceFeedback();
+			PlayCameraShake();
+		}
 	}
 }
 
@@ -155,5 +182,33 @@ void ACannon::ShootTrace()
 	else
 	{
 		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.5f, 0, 5.0f);
+	}
+
+	TraceShootEffect->ActivateSystem();
+	TraceAudioEffect->Play();
+
+	if (GetOwner() && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		PlayForceFeedback();
+		PlayCameraShake();
+	}
+}
+
+void ACannon::PlayForceFeedback() const
+{
+	if (ForceFeedbackEffect)
+	{
+		FForceFeedbackParameters FeedbackParams;
+		FeedbackParams.bLooping = false;
+		FeedbackParams.Tag = TEXT("ShootForceEffectParams");
+		GetWorld()->GetFirstPlayerController()->ClientPlayForceFeedback(ForceFeedbackEffect, FeedbackParams);
+	}
+}
+
+void ACannon::PlayCameraShake() const
+{
+	if (CameraShake)
+	{
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(CameraShake);
 	}
 }
