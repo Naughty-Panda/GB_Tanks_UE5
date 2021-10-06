@@ -2,9 +2,16 @@
 
 
 #include "TankPawn.h"
-#include "Components/StaticMeshComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+
+#include "GB_Tanks_UE5.h"
+#include "TankPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/ArrowComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+
+#include "EnhancedInputSubsystems.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -33,19 +40,30 @@ ATankPawn::ATankPawn()
 	// Camera
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	// Cannon components
+	CannonAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon attach point"));
+	CannonAttachPoint->AttachToComponent(TurretBody, FAttachmentTransformRules::KeepRelativeTransform);
+	//CannonAttachPoint->Mobility = EComponentMobility::Static;
+	//CannonAttachPoint->SetupAttachment(TurretBody);
 }
 
-void ATankPawn::MoveForward(const float& AxisValue)
+void ATankPawn::MoveForward(float AxisValue)
 {
 	TargetForwardAxisValue = AxisValue;
 }
 
-void ATankPawn::MoveRight(const float& AxisValue)
+void ATankPawn::MoveRight(float AxisValue)
 {
 	TargetRightAxisValue = AxisValue;
 }
 
-void ATankPawn::CameraZoom(const float& AxisValue) const
+void ATankPawn::Rotate(float AxisValue)
+{
+	TargetRotationAxisValue = AxisValue;
+}
+
+void ATankPawn::CameraZoom(float AxisValue)
 {
 	// TODO: Switch from Axis to Action Mapping?
 	// TODO: Smooth camera zooming using lerp?
@@ -55,10 +73,82 @@ void ATankPawn::CameraZoom(const float& AxisValue) const
 	}
 }
 
+void ATankPawn::Fire(ECannonFireMode FireMode)
+{
+	if (Cannon)
+	{
+		switch (FireMode)
+		{
+		case ECannonFireMode::Single: Cannon->Fire();
+			break;
+		case ECannonFireMode::Burst: Cannon->FireSpecial();
+			break;
+		default: break;
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PlayerController = Cast<ATankPlayerController>(GetController());
+	SetupCannon();
+}
+
+// PawnClientRestart can run more than once in an Actor's lifetime
+void ATankPawn::PawnClientRestart()
+{
+	Super::PawnClientRestart();
+
+	// Make sure we have a valid Player Controller.
+	PlayerController = Cast<ATankPlayerController>(GetController());
+	if (!PlayerController)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s: wrong Player Controller Class!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (!Subsystem)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Enhanced Input Local Player Subsystem!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
+	Subsystem->ClearAllMappings();
+
+	if (!InputMappingContext)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: Input Mapping Context Asset wasn't assigned!"), TEXT(__FUNCTION__));
+		return;
+	}
+
+	// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
+	Subsystem->AddMappingContext(InputMappingContext, InputMappingPriority);
+}
+
+void ATankPawn::SetupCannon()
+{
+	if (Cannon)
+	{
+		Cannon->Destroy();
+		Cannon = nullptr;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = SpawnParameters.Instigator = this;
+
+	if (!CannonClass)
+	{
+		return;
+	}
+
+	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, SpawnParameters);
+	Cannon->AttachToComponent(CannonAttachPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
 // Called every frame
@@ -66,13 +156,42 @@ void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Tank movement tick
 	FVector Direction = GetActorForwardVector() * TargetForwardAxisValue + GetActorRightVector() * TargetRightAxisValue;
-
 	if (!Direction.IsZero())
 	{
 		Direction.Normalize();
 		FVector CurrentLocation = GetActorLocation();
 		FVector TargetLocation = CurrentLocation + Direction * MoveSpeed * DeltaTime;
 		SetActorLocation(TargetLocation, true);
+
+		// TODO: FInd a better way to reset Enhanced Input's axes.
+		TargetForwardAxisValue = TargetRightAxisValue = 0.0f;
+	}
+
+	// Tank rotation tick
+	CurrentRotationAxisValue = FMath::FInterpConstantTo(CurrentRotationAxisValue, TargetRotationAxisValue, DeltaTime, TankRotInterpSpeed);
+	if (CurrentRotationAxisValue)
+	{
+		float YawRotation = CurrentRotationAxisValue * RotationSpeed * DeltaTime;
+		FRotator CurrentRotation = GetActorRotation();
+		YawRotation += CurrentRotation.Yaw;
+		FRotator NewRotation{0.0f, YawRotation, 0.0f};
+		SetActorRotation(NewRotation);
+
+		UE_LOG(LogTanks, Log, TEXT("Current %f Target %f"), CurrentRotationAxisValue, TargetRotationAxisValue);
+		TargetRotationAxisValue = 0.0f;
+	}
+
+	// Turret rotation tick
+	if (PlayerController)
+	{
+		FVector MousePosition = PlayerController->GetMousePosition();
+		float TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MousePosition).Yaw;
+		float CurrentRotation = TurretBody->GetComponentRotation().Yaw;
+		//TargetRotation.Roll = CurrentRotation.Roll;
+		//TargetRotation.Pitch = CurrentRotation.Pitch;
+		TargetRotation = FMath::FInterpConstantTo(CurrentRotation, TargetRotation, DeltaTime, TurrerRotInterpSpeed);
+		TurretBody->SetWorldRotation({0.0f, TargetRotation, 0.0f});
 	}
 }

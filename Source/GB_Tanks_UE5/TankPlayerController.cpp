@@ -2,20 +2,36 @@
 
 
 #include "TankPlayerController.h"
+#include "EnhancedInputComponent.h"
 #include "TankPawn.h"
+#include "DrawDebugHelpers.h"
 
 ATankPlayerController::ATankPlayerController()
 {
+	bShowMouseCursor = true;
 }
 
 void ATankPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
+	/** Make sure that we are using a UEnhancedInputComponent; if not, the project is not configured correctly. */
+	EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (!EnhancedInputComponent)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("%s: wrong Enhanced Input Component Class!"), TEXT(__FUNCTION__));
+		return;
+	}
+	if (!MovementInputAction || !CameraZoomInputAction || !TankFireInputAction || !TankFireSpecialInputAction)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s: Input Action Assets wasn't assigned correctly! Check BP_TankPlayerController/Input Actions."), TEXT(__FUNCTION__));
+		return;
+	}
 
-	InputComponent->BindAxis("CameraZoom", this, &ATankPlayerController::CameraZoom);
+	EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ATankPlayerController::MoveTank);
+	EnhancedInputComponent->BindAction(CameraZoomInputAction, ETriggerEvent::Started, this, &ATankPlayerController::CameraZoom);
+	EnhancedInputComponent->BindAction(TankFireInputAction, ETriggerEvent::Started, this, &ATankPlayerController::Fire);
+	EnhancedInputComponent->BindAction(TankFireSpecialInputAction, ETriggerEvent::Started, this, &ATankPlayerController::FireSpecial);
 }
 
 void ATankPlayerController::BeginPlay()
@@ -25,17 +41,42 @@ void ATankPlayerController::BeginPlay()
 	TankPawn = Cast<ATankPawn>(GetPawn());
 }
 
-void ATankPlayerController::MoveForward(float AxisValue)
+void ATankPlayerController::Tick(float DeltaSeconds)
 {
-	TankPawn->MoveForward(AxisValue);
+	Super::Tick(DeltaSeconds);
+
+	FVector MouseDirecion;
+	FVector PawnPosition = TankPawn->GetActorLocation();
+	DeprojectMousePositionToWorld(MousePosition, MouseDirecion);
+	MousePosition.Z = PawnPosition.Z;
+	FVector Direction = MousePosition - PawnPosition;
+	Direction.Normalize();
+	MousePosition = PawnPosition + Direction * 1000.0f;
+
+	DrawDebugLine(GetWorld(), PawnPosition, MousePosition, FColor::Green, false, 0.1f, 0.0f, 5.0f);
 }
 
-void ATankPlayerController::MoveRight(float AxisValue)
+void ATankPlayerController::MoveTank(const FInputActionValue& Value)
 {
-	TankPawn->MoveRight(AxisValue);
+	//** Value[1] = FVector Y axis */
+	TankPawn->MoveForward(Value[1]);
+	//** Value[0] = FVector X axis */
+	TankPawn->MoveRight(Value[0]);
+	//** Value[2] = FVector Z axis */
+	TankPawn->Rotate(Value[2]);
 }
 
-void ATankPlayerController::CameraZoom(float AxisValue)
+void ATankPlayerController::CameraZoom(const FInputActionValue& Value)
 {
-	TankPawn->CameraZoom(AxisValue);
+	TankPawn->CameraZoom(Value[0]);
+}
+
+void ATankPlayerController::Fire()
+{
+	TankPawn->Fire(ECannonFireMode::Single);
+}
+
+void ATankPlayerController::FireSpecial()
+{
+	TankPawn->Fire(ECannonFireMode::Burst);
 }
