@@ -7,6 +7,16 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+ACannon& ATankPawn::GetPrimaryCannon() const
+{
+	return *PrimaryCannon;
+}
+
+ACannon& ATankPawn::GetSecondaryCannon() const
+{
+	return *SecondaryCannon;
+}
+
 // Sets default values
 ATankPawn::ATankPawn()
 {
@@ -37,6 +47,31 @@ void ATankPawn::CameraZoom(float AxisValue)
 	{
 		SpringArm->TargetArmLength = FMath::Clamp(SpringArm->TargetArmLength + CameraZoomStep * AxisValue, CameraMinDistance, CameraMaxDistance);
 	}
+}
+
+void ATankPawn::SwitchCannon()
+{
+	Swap(PrimaryCannon, SecondaryCannon);
+}
+
+void ATankPawn::SetupCannon(TSubclassOf<ACannon> InCannon)
+{
+	if (!InCannon)
+	{
+		return;
+	}
+
+	if (PrimaryCannon)
+	{
+		PrimaryCannon->Destroy();
+		PrimaryCannon = nullptr;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = SpawnParameters.Instigator = this;
+
+	PrimaryCannon = GetWorld()->SpawnActor<ACannon>(InCannon, SpawnParameters);
+	PrimaryCannon->AttachToComponent(CannonAttachPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
 // Called when the game starts or when spawned

@@ -35,7 +35,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Explosion", meta = (EditCondition = "bCanExplode", EditConditionHides))
 	float ExplodeRadius = 50.0f;
-
+  
 private:
 	FTimerHandle MovementTimerHandle;
 
@@ -60,5 +60,6 @@ protected:
 		bool bFromSweep,
 		const FHitResult& HitResult
 	);
+  
 	virtual void Move();
 };

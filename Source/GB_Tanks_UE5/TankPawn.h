@@ -69,7 +69,7 @@ protected:
 	virtual void PawnClientRestart() override;
 
 	virtual void DamageTaken(float DamageValue) override;
-
+  
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

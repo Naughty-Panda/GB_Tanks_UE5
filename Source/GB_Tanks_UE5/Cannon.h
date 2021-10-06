@@ -38,7 +38,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FCannonAmmo Ammo;
-
+  
 	/**
 	 *  Shot VFX
 	 */
@@ -79,8 +79,19 @@ protected:
 	/** Rate of fire in burst fire mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (EditCondition = "BurstFireShots > 1", EditConditionHides), Category = "Fire settings")
 	float FireRateBurst = 1.0f;
+  
+	//** Number of shots in burst fire mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
+	uint8 BurstFireShots = 3;
 
-	/** Fire rate in single shot mode */
+	//** Number of shots to be fired in burst fire mode */
+	uint8 BurstFireShotsLeft = BurstFireShots;
+
+	//** Rate of fire in burst fire mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (EditCondition = "BurstFireShots > 1", EditConditionHides), Category = "Fire settings")
+	float FireRateBurst = 1.0f;
+
+	//** Fire rate in single shot mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	float FireRateSingle = 1.0f;
 
