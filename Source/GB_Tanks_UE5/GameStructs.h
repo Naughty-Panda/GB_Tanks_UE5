@@ -29,6 +29,15 @@ enum class ECannonFireMode : uint8
 	Charge = 2 UMETA(DisplayName = "Requires charging a shot"),
 };
 
+UENUM(BlueprintType)
+enum class EWidgetType : uint8
+{
+	WT_None,
+	WT_MainMenu,
+	WT_OptionsMenu,
+	WT_GameOverMenu
+};
+
 USTRUCT(BlueprintType)
 struct FCannonAmmo
 {

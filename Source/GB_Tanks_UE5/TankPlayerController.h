@@ -11,6 +11,7 @@
 
 class ATankPawn;
 class UInputAction;
+class AUIManager;
 struct FInputActionValue;
 struct FInputActionInstance;
 
@@ -59,7 +60,11 @@ protected:
 public:
 	ATankPlayerController();
 	FVector GetMousePosition() const { return MousePosition; }
-	void InitGameOver();
+	void InitGameOver() const;
+
+	UFUNCTION(BlueprintCallable, Category="UI")
+	AUIManager* GetUIManager() const;
+
 
 protected:
 	virtual void SetupInputComponent() override;

@@ -15,6 +15,7 @@ class USphereComponent;
 class UHealthComponent;
 class UParticleSystem;
 class USoundBase;
+class UWidgetComponent;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankBase : public APawn, public IDamageTaker
@@ -43,6 +44,10 @@ public:
 	/** Default class for tank's cannon */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	TSubclassOf<ACannon> DefaultCannonClass;
+
+	/** Component that holds widget for tank's Health Bar */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+	UWidgetComponent* HealthBarComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
 	UParticleSystem* DestructionParticleEffect;
@@ -132,6 +137,9 @@ protected:
 
 	UFUNCTION()
 	virtual void DamageTaken(float DamageValue);
+
+	UFUNCTION()
+	virtual void OnHealthChanged(float MaxHealth, float CurrentHealth);
 
 	UFUNCTION()
 	void OnEnteringVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

@@ -3,7 +3,6 @@
 #include "TankPawn.h"
 #include "TankPlayerController.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -120,7 +119,10 @@ void ATankPawn::Destroyed()
 {
 	Super::Destroyed();
 
-	PlayerController->InitGameOver();
+	if (PlayerController)
+	{
+		PlayerController->InitGameOver();
+	}
 }
 
 void ATankPawn::DamageTaken(float DamageValue)

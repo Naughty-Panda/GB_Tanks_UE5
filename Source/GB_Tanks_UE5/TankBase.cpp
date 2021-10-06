@@ -8,10 +8,13 @@
 #include "Components/ArrowComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/AudioComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "UI/HealthBarWidget.h"
 
 // Sets default values
 ATankBase::ATankBase()
@@ -37,9 +40,17 @@ ATankBase::ATankBase()
 	CannonAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon attachment point"));
 	CannonAttachPoint->SetupAttachment(TurretMesh);
 
+	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
+	HealthBarComponent->SetupAttachment(RootComponent);
+	HealthBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HealthBarComponent->SetGenerateOverlapEvents(false);
+	HealthBarComponent->AddRelativeLocation({-300.f, 0.f, 450.f});
+	HealthBarComponent->SetRelativeRotation({-270.f, 0.f, 0.f});
+
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	HealthComponent->OnDie.AddDynamic(this, &ATankBase::Die);
 	HealthComponent->OnDamaged.AddDynamic(this, &ATankBase::DamageTaken);
+	HealthComponent->OnHealthChanged.AddDynamic(this, &ATankBase::OnHealthChanged);
 }
 
 void ATankBase::MoveForward(const float AxisValue)
@@ -188,6 +199,11 @@ void ATankBase::BeginPlay()
 	ensure(DefaultCannonClass);
 	SetupCannon(DefaultCannonClass);
 
+	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBarComponent->GetWidget()))
+	{
+		HealthBarWidget->UpdateHealthBar(1.f);
+	}
+
 	// Setting up visibility range Sphere Component for AI controlled pawns
 	if (bIsAIControlled)
 	{
@@ -225,6 +241,16 @@ void ATankBase::Die()
 void ATankBase::DamageTaken(float DamageValue)
 {
 	UE_LOG(LogTanks, Warning, TEXT("%s taking damage: %f"), *GetName(), DamageValue);
+}
+
+void ATankBase::OnHealthChanged(float MaxHealth, float CurrentHealth)
+{
+	const float HealthRatio = CurrentHealth / MaxHealth;
+
+	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBarComponent->GetWidget()))
+	{
+		HealthBarWidget->UpdateHealthBar(HealthRatio);
+	}
 }
 
 void ATankBase::OnEnteringVisibilityRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
