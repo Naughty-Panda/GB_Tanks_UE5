@@ -34,12 +34,12 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* CannonAttachPoint;
 
 	//** Default class for tank's cannon */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	TSubclassOf<ACannon> CannonClass;
+	TSubclassOf<ACannon> DefaultCannonClass;
 
 	/** Input Mapping Context Asset our actor will use */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
@@ -76,8 +76,11 @@ private:
 	UPROPERTY()
 	ATankPlayerController* PlayerController;
 
+	//** Tank Cannons */
 	UPROPERTY()
-	ACannon* Cannon;
+	ACannon* PrimaryCannon;
+	UPROPERTY()
+	ACannon* SecondaryCannon;
 
 	/** Holds forward, right and rotation axes provided by user input */
 	float TargetForwardAxisValue = 0.0f;
@@ -89,27 +92,20 @@ public:
 	// Sets default values for this pawn's properties
 	ATankPawn();
 
-	UFUNCTION()
 	void MoveForward(float AxisValue);
-
-	UFUNCTION()
 	void MoveRight(float AxisValue);
-
-	UFUNCTION()
 	void Rotate(float AxisValue);
-
-	UFUNCTION()
 	void CameraZoom(float AxisValue);
-
-	UFUNCTION()
 	void Fire(ECannonFireMode FireMode);
+	void SwitchCannon();
+	void SetupCannon(TSubclassOf<ACannon> InCannon);
+	ACannon& GetPrimaryCannon() const;
+	ACannon& GetSecondaryCannon() const;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PawnClientRestart() override;
-
-	void SetupCannon();
 
 public:
 	// Called every frame
