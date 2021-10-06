@@ -11,6 +11,10 @@
 class UStaticMeshComponent;
 class UArrowComponent;
 class AProjectile;
+class UParticleSystemComponent;
+class UAudioComponent;
+class UCameraShakeBase;
+class UForceFeedbackEffect;
 
 UCLASS()
 class GB_TANKS_UE5_API ACannon : public AActor
@@ -24,7 +28,7 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ProjectileSpawnPoint;
 
-	//** Current cannon type */
+	/** Current cannon type */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	ECannonType CannonType = ECannonType::TraceCannon;
 
@@ -35,18 +39,48 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FCannonAmmo Ammo;
 
-	//** Number of shots in burst fire mode */
+	/**
+	 *  Shot VFX
+	 */
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX", meta = (EditCondition = "CannonType == ECannonType::ProjectileCannon", EditConditionHides))
+	UParticleSystemComponent* ProjectileShootEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX", meta = (EditCondition = "CannonType == ECannonType::TarceCannon", EditConditionHides))
+	UParticleSystemComponent* TraceShootEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX", meta = (EditCondition = "CannonType == ECannonType::ProjectileCannon", EditConditionHides))
+	UAudioComponent* ProjectileAudioEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX", meta = (EditCondition = "CannonType == ECannonType::TraceCannon", EditConditionHides))
+	UAudioComponent* TraceAudioEffect;
+
+	/**
+	 * Shot feedback
+	 */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Shot Feedback")
+	TSubclassOf<UCameraShakeBase> CameraShake;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Shot Feedback")
+	UForceFeedbackEffect* ForceFeedbackEffect;
+
+	/**
+	* Fire Settings
+	*/
+
+	/** Number of shots in burst fire mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	uint8 BurstFireShots = 3;
 
-	//** Number of shots to be fired in burst fire mode */
+	/** Number of shots to be fired in burst fire mode */
 	uint8 BurstFireShotsLeft = BurstFireShots;
 
-	//** Rate of fire in burst fire mode */
+	/** Rate of fire in burst fire mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (EditCondition = "BurstFireShots > 1", EditConditionHides), Category = "Fire settings")
 	float FireRateBurst = 1.0f;
 
-	//** Fire rate in single shot mode */
+	/** Fire rate in single shot mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire settings")
 	float FireRateSingle = 1.0f;
 
@@ -58,7 +92,7 @@ protected:
 
 	bool bReadyToFire = true;
 
-	//** Cannon timers */
+	/** Cannon timers */
 	FTimerHandle ReloadTimerHandle;
 	FTimerHandle BurstFireTimerHandle;
 
@@ -79,6 +113,9 @@ protected:
 	void FireSingle();
 	void FireBurst();
 	void Reload();
-	void ShootProjectile() const;
-	void ShootTrace() const;
+	void ShootProjectile();
+	void ShootTrace();
+
+	void PlayForceFeedback() const;
+	void PlayCameraShake() const;
 };
