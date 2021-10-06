@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TankPawn.h"
 #include "GameFramework/PlayerController.h"
 
 #include "TankPlayerController.generated.h"
@@ -39,10 +38,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
 	UInputAction* TankFireSpecialInputAction;
 
-	/** Input Action Asset responsible for switching tank's cannon */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input Actions")
-	UInputAction* TankSwitchCannonInputAction;
-
 	//** Controlled Pawn */
 	UPROPERTY()
 	ATankPawn* TankPawn;
@@ -62,7 +57,6 @@ protected:
 
 	void MoveTank(const FInputActionValue& Value);
 	void CameraZoom(const FInputActionValue& Value);
-	void Fire() { TankPawn->Fire(ECannonFireMode::Single); }
-	void FireSpecial() { TankPawn->Fire(ECannonFireMode::Burst); }
-	void SwitchCannon() { TankPawn->SwitchCannon(); }
+	void Fire();
+	void FireSpecial();
 };
