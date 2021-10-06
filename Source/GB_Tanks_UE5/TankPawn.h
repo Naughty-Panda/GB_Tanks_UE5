@@ -3,43 +3,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "TankBase.h"
 #include "InputMappingContext.h"
-#include "Cannon.h"
 
 #include "TankPawn.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class ATankPlayerController;
-class UArrowComponent;
+class UCameraShakeBase;
+class UForceFeedbackEffect;
 
 UCLASS()
-class GB_TANKS_UE5_API ATankPawn : public APawn
+class GB_TANKS_UE5_API ATankPawn : public ATankBase
 {
 	GENERATED_BODY()
 
 protected:
-	/** Tank body mesh component */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	UStaticMeshComponent* TankBody;
-
-	/** Turret body mesh component */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	UStaticMeshComponent* TurretBody;
-
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	UArrowComponent* CannonAttachPoint;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Hit Feedback")
+	TSubclassOf<UCameraShakeBase> HitCameraShake;
 
-	//** Default class for tank's cannon */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	TSubclassOf<ACannon> DefaultCannonClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Hit Feedback")
+	UForceFeedbackEffect* HitForceFeedback;
 
 	/** Input Mapping Context Asset our actor will use */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
@@ -49,25 +40,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Input")
 	int32 InputMappingPriority = 1;
 
-	/** Tank move speed */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
-	float MoveSpeed = 500.0f;
-
-	/** Tank rotation speed */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
-	float RotationSpeed = 100.0f;
-
-	/** Tank rotation interpolation speed */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
-	float TankRotInterpSpeed = 1.5f;
-
-	/** Turret rotation interpolation speed */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
-	float TurrerRotInterpSpeed = 150.0f;
-
 	/** Sets camera angle */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	FRotator CameraAngle = {270.0f, 0.0f, 0.0f};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
+	float CameraMinDistance = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
+	float CameraMaxDistance = 6000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	float CameraZoomStep = 100.0f;
@@ -76,37 +57,19 @@ private:
 	UPROPERTY()
 	ATankPlayerController* PlayerController;
 
-	//** Tank Cannons */
-	UPROPERTY()
-	ACannon* PrimaryCannon;
-	UPROPERTY()
-	ACannon* SecondaryCannon;
-
-	/** Holds forward, right and rotation axes provided by user input */
-	float TargetForwardAxisValue = 0.0f;
-	float TargetRightAxisValue = 0.0f;
-	float TargetRotationAxisValue = 0.0f;
-	float CurrentRotationAxisValue = 0.0f;
-
 public:
 	// Sets default values for this pawn's properties
 	ATankPawn();
 
-	void MoveForward(float AxisValue);
-	void MoveRight(float AxisValue);
-	void Rotate(float AxisValue);
 	void CameraZoom(float AxisValue);
-	void Fire(ECannonFireMode FireMode);
-	void SwitchCannon();
-	void SetupCannon(TSubclassOf<ACannon> InCannon);
-	ACannon& GetPrimaryCannon() const;
-	ACannon& GetSecondaryCannon() const;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PawnClientRestart() override;
 
+	virtual void DamageTaken(float DamageValue) override;
+  
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

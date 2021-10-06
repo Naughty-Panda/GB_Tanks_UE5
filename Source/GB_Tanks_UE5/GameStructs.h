@@ -81,3 +81,18 @@ struct FCannonAmmo
 		return CurrentAmmo == MaxAmmo;
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FDamageData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	float DamageValue = 0.0f;
+
+	UPROPERTY()
+	AActor* Instigator;
+
+	UPROPERTY()
+	AActor* DamageDealer;
+};

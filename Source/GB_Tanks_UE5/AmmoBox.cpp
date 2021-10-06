@@ -15,7 +15,7 @@ void AAmmoBox::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 	if (OverlappedActor->IsPlayerControlled())
 	{
-		if (ACannon* Cannon = &OverlappedActor->GetPrimaryCannon())
+		if (ACannon* Cannon = OverlappedActor->GetPrimaryCannon())
 		{
 			if (!Cannon->HasFullAmmo())
 			{
