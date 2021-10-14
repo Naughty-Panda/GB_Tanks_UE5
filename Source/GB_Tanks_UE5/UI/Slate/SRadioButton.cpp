@@ -8,6 +8,8 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SRadioButton::Construct(const FArguments& InArgs)
 {
 	OnButtonStateChangedEvent = InArgs._OnButtonStateChanged;
+	CheckBoxStyle = &InArgs._Style->CheckBoxStyle;
+	TextStyle = &InArgs._Style->TextStyle;
 
 	ChildSlot
 	[
@@ -33,10 +35,12 @@ TSharedRef<SCheckBox> SRadioButton::CreateRadioButton(ERadioButton ButtonId, FSt
 {
 	return
 		SNew(SCheckBox)
+			.Style(CheckBoxStyle)
 			.IsChecked(this, &SRadioButton::IsButtonChecked, ButtonId)
 			.OnCheckStateChanged(this, &SRadioButton::OnButtonStateChanged, ButtonId)
 		[
 			SNew(STextBlock)
+			.TextStyle(TextStyle)
 			.Text(FText::FromString(Text))
 		];
 }

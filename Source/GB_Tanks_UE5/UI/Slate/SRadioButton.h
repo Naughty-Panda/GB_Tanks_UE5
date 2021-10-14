@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RadioButtonsWidgetStyle.h"
 #include "Widgets/SCompoundWidget.h"
 
 UENUM(BlueprintType)
@@ -25,6 +26,8 @@ public:
 		{
 		}
 
+		SLATE_STYLE_ARGUMENT(FRadioButtonsStyle, Style)
+
 		SLATE_EVENT(FOnButtonStateChanged, OnButtonStateChanged)
 
 	SLATE_END_ARGS()
@@ -32,6 +35,9 @@ public:
 protected:
 	ERadioButton CurrentButton = ERadioButton::RB_0;
 	FOnButtonStateChanged OnButtonStateChangedEvent;
+
+	const FCheckBoxStyle* CheckBoxStyle = nullptr;
+	const FTextBlockStyle* TextStyle = nullptr;
 
 public:
 	/** Constructs this widget with InArgs */

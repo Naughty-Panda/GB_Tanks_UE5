@@ -24,6 +24,10 @@ protected:
 	UPROPERTY(BlueprintAssignable, Category="UI Events")
 	FOnButtonStateChangedEvent OnButtonStateChangedEvent;
 
+public:
+	UPROPERTY(EditAnywhere, Category=Appearance)
+	FRadioButtonsStyle WidgetStyle;
+
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
