@@ -35,4 +35,5 @@ public:
 	
 	void AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder = 0);
 	void RemoveActiveWidget();
+	void UpdatePlayerPositionOnMinimap(const FVector2D& InPosition);
 };

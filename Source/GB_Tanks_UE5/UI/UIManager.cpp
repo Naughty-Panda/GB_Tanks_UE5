@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UIManager.h"
+#include "MinimapUMGWidget.h"
 #include "Blueprint/UserWidget.h"
 
 AUIManager::AUIManager()
@@ -11,6 +12,9 @@ AUIManager::AUIManager()
 void AUIManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Draw Minimap widget on BeginPlay.
+	SetActiveWidget(EWidgetType::WT_Minimap);
 }
 
 void AUIManager::SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrder)
@@ -46,5 +50,16 @@ void AUIManager::RemoveActiveWidget()
 		ActiveWidget = nullptr;
 
 		ActiveWidgetType = EWidgetType::WT_None;
+	}
+}
+
+void AUIManager::UpdatePlayerPositionOnMinimap(const FVector2D& InPosition)
+{
+	if (ActiveWidgetType == EWidgetType::WT_Minimap)
+	{
+		if (UMinimapUMGWidget* MinimapWidget = Cast<UMinimapUMGWidget>(ActiveWidget))
+		{
+			MinimapWidget->UpdateMinimap(InPosition);
+		}
 	}
 }
