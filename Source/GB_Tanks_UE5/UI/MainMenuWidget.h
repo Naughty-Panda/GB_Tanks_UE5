@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RadioButton.h"
 #include "Blueprint/UserWidget.h"
 #include "Animation/WidgetAnimation.h"
 
 #include "MainMenuWidget.generated.h"
 
 class UButton;
+class UImage;
 
 /**
  * 
@@ -23,6 +25,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UButton* NewGameBtn;
 
+	/** New Game Image */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
+	UImage* NewGameImg;
+
 	/** Options Button */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UButton* OptionsBtn;
@@ -31,6 +37,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* QuitBtn;
 
+	/** RadioButtons for testing */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
+	URadioButton* RadioBtn;
+
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnimOptional))
 	UWidgetAnimation* NewGameBtnAnim;
 
@@ -38,6 +48,8 @@ protected:
 	FWidgetAnimationDynamicEvent AnimDelegate;
 
 public:
+	virtual void NativePreConstruct() override;
+
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()

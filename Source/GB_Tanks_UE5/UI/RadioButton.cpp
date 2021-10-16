@@ -10,9 +10,8 @@ void URadioButton::ReleaseSlateResources(bool bReleaseChildren)
 
 TSharedRef<SWidget> URadioButton::RebuildWidget()
 {
-	Super::RebuildWidget();
-
 	RadioButton = SNew(SRadioButton)
+		.Style(&WidgetStyle)
 		.OnButtonStateChanged_UObject(this, &URadioButton::OnButtonStateChanged);
 
 	return RadioButton.ToSharedRef();

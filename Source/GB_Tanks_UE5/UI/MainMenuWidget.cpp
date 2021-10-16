@@ -2,9 +2,53 @@
 
 #include "MainMenuWidget.h"
 #include "Components/Button.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/ButtonSlot.h"
+#include "Components/Image.h"
+#include "Slate/StyleSet.h"
 #include "GB_Tanks_UE5/GB_Tanks_UE5.h"
 
 #include <Kismet/KismetSystemLibrary.h>
+
+#include "Components/TextBlock.h"
+
+// Applying Styles on PreConstruct to see changes in editor.
+void UMainMenuWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+
+	//RadioButton = WidgetTree->ConstructWidget<URadioButton>();
+
+	if (RadioBtn)
+	{
+		RadioBtn->WidgetStyle = FStyleSet::Get().GetWidgetStyle<FRadioButtonsStyle>("WS_RadioButtons");
+	}
+
+	if (NewGameBtn)
+	{
+		NewGameBtn->SetBackgroundColor(FStyleSet::Get().GetColor("Red"));
+	}
+
+	if (OptionsBtn)
+	{
+		OptionsBtn->SetBackgroundColor(FStyleSet::Get().GetColor("OptionsColor"));
+	}
+
+	if (QuitBtn)
+	{
+		QuitBtn->SetBackgroundColor(FStyleSet::Get().GetColor("QuitGameColor"));
+	}
+
+	if (NewGameImg)
+	{
+		NewGameImg->SetBrush(*FStyleSet::Get().GetBrush("RedFrog"));
+
+		if (UButtonSlot* ImgSlot = Cast<UButtonSlot>(NewGameImg->Slot))
+		{
+			ImgSlot->SetPadding(FStyleSet::Get().GetMargin("Margin"));
+		}
+	}
+}
 
 void UMainMenuWidget::NativeConstruct()
 {
@@ -17,6 +61,7 @@ void UMainMenuWidget::NativeConstruct()
 
 	if (OptionsBtn)
 	{
+		//OptionsBtn->SetContent(CreateWidget<UButton>(this));
 		OptionsBtn->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOptionsBtnClicked);
 	}
 
