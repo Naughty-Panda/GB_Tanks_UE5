@@ -11,6 +11,9 @@
 ATankPlayerController::ATankPlayerController()
 {
 	bShowMouseCursor = true;
+
+	// Allows to capture Key presses events.
+	bEnableClickEvents = true;
 }
 
 void ATankPlayerController::InitGameOver() const
@@ -48,6 +51,10 @@ void ATankPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(TankFireInputAction, ETriggerEvent::Started, this, &ATankPlayerController::Fire);
 	EnhancedInputComponent->BindAction(TankFireSpecialInputAction, ETriggerEvent::Started, this, &ATankPlayerController::FireSpecial);
 	EnhancedInputComponent->BindAction(TankSwitchCannonInputAction, ETriggerEvent::Started, this, &ATankPlayerController::SwitchCannon);
+	//EnhancedInputComponent->BindAction(TankFireInputAction, ETriggerEvent::Completed, this, &ATankPlayerController::OnLeftMouseButtonUp);
+
+	// Binding for the Spawnable Object Widget.
+	//EnhancedInputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Released, this, &ATankPlayerController::OnLeftMouseButtonUp);
 }
 
 void ATankPlayerController::BeginPlay()
@@ -61,9 +68,9 @@ void ATankPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FVector MouseDirecion;
+	FVector MouseDirection;
 	const FVector PawnPosition = TankPawn->GetActorLocation();
-	DeprojectMousePositionToWorld(MousePosition, MouseDirecion);
+	DeprojectMousePositionToWorld(MousePosition, MouseDirection);
 	MousePosition.Z = PawnPosition.Z;
 	FVector Direction = MousePosition - PawnPosition;
 	Direction.Normalize();
