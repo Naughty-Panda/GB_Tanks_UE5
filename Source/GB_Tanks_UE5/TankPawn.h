@@ -70,7 +70,7 @@ protected:
 	virtual void Destroyed() override;
 
 	virtual void DamageTaken(float DamageValue) override;
-  
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
