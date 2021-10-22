@@ -6,6 +6,7 @@
 #include "TankPawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "Delegates/Delegate.h"
 
 #include "TankPlayerController.generated.h"
 
@@ -58,6 +59,13 @@ protected:
 	FVector MousePosition;
 
 public:
+	/** Delegate for Spawnable Object Widget.
+	*	UserWidget can't capture Pointer Event if it occurred outside its geometry!
+	*	So we need to broadcast it back to the Widget through, for e.g, Player Controller.
+	*/
+	FSimpleMulticastDelegate OnLeftMouseButtonUpDelegate;
+
+public:
 	ATankPlayerController();
 	FVector GetMousePosition() const { return MousePosition; }
 	void InitGameOver() const;
@@ -76,4 +84,6 @@ protected:
 	void Fire() { TankPawn->Fire(ECannonFireMode::Single); }
 	void FireSpecial() { TankPawn->Fire(ECannonFireMode::Burst); }
 	void SwitchCannon() { TankPawn->SwitchCannon(); }
+
+	void OnLeftMouseButtonUp() { UE_LOG(LogTemp, Warning, TEXT("LMB Triggered!")); OnLeftMouseButtonUpDelegate.Broadcast(); }
 };
