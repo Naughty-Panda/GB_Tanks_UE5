@@ -16,5 +16,5 @@ void FInventorySystemModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FInventorySystemModule, InventorySystem)
