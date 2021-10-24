@@ -13,6 +13,8 @@ class UCameraComponent;
 class ATankPlayerController;
 class UCameraShakeBase;
 class UForceFeedbackEffect;
+class UInventoryComponent;
+class UInventoryManagerComponent;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public ATankBase
@@ -52,6 +54,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	float CameraZoomStep = 100.0f;
+
+	/** Inventory plugin components */
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UInventoryComponent* InventoryComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UInventoryManagerComponent* InventoryManagerComponent;
 
 private:
 	UPROPERTY()
