@@ -38,6 +38,8 @@ public class InventorySystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"UMG", // For UUserWidgets
+				"InputCore", // For FPointerEvents and EKeys
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
