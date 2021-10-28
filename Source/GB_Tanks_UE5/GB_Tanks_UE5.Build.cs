@@ -10,7 +10,7 @@ public class GB_Tanks_UE5 : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "ModularGameplay", });
 		
 		// Add dependency to our Inventory System Plugin.
 		PublicDependencyModuleNames.AddRange(new string[] { "InventorySystem", });
