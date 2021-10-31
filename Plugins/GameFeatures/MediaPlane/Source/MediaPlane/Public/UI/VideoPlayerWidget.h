@@ -12,6 +12,7 @@ class UButton;
 class UImage;
 class USlider;
 class UMediaPlayer;
+class UMediaTexture;
 
 /**
  * 
@@ -31,12 +32,15 @@ protected:
 	UButton* BrowseButton;
 
 	/** Image widget used to render a picture from Media Player */
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
 	UImage* Screen;
 
 	/** Slider to adjust Screen scale */
 	UPROPERTY(meta=(BindWidget))
 	USlider* ScaleSlider;
+
+	/** Indicates if selected media file is a video or a picture */
+	bool bIsVideoFile;
 
 public:
 	/** Media Player requires MediaAssets dependency in build properties */
@@ -47,11 +51,18 @@ public:
 	UPROPERTY()
 	FString FilePath;
 
+	/** Media Texture from Media Player */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMediaTexture* MediaTexture;
+
 protected:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
 	void OnBrowseButtonClicked();
+
+	void InitVideoScreen() const;
+	void InitPictureScreen() const;
 
 	UFUNCTION()
 	void OnScaleChanged(float Scale);

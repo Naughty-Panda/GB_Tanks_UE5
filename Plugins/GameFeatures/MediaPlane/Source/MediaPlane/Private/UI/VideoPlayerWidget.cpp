@@ -11,6 +11,8 @@
 #include "Components/Image.h"
 #include "Components/Slider.h"
 #include "Components/WidgetSwitcher.h"
+#include "MediaTexture.h"
+#include "Kismet/KismetRenderingLibrary.h"
 
 void UVideoPlayerWidget::NativeConstruct()
 {
@@ -25,6 +27,7 @@ void UVideoPlayerWidget::NativeConstruct()
 	if (ScaleSlider)
 	{
 		ScaleSlider->OnValueChanged.AddDynamic(this, &UVideoPlayerWidget::OnScaleChanged);
+		ScaleSlider->SetValue(0.5f);
 	}
 
 	if (WidgetSwitcher)
@@ -58,6 +61,25 @@ void UVideoPlayerWidget::OnBrowseButtonClicked()
 		FilePath = OutFileNames[0];
 	}
 
+	// Check if selected media file is video file.
+	bIsVideoFile = FilePath.EndsWith(".mp4", ESearchCase::IgnoreCase) ? true : false;
+
+	if (bIsVideoFile)
+	{
+		InitVideoScreen();
+	}
+	else // If selected file isn't a video.
+	{
+		InitPictureScreen();
+	}
+
+	// Switching to Screen widget.
+	WidgetSwitcher->SetActiveWidgetIndex(1);
+	ScaleSlider->OnValueChanged.Broadcast(ScaleSlider->GetValue());
+}
+
+void UVideoPlayerWidget::InitVideoScreen() const
+{
 	// Initializing Media Player.
 	if (!MediaPlayer)
 	{
@@ -70,18 +92,51 @@ void UVideoPlayerWidget::OnBrowseButtonClicked()
 	MediaPlayer->OpenSource(MediaSource);
 
 	// Initializing Sound Component.
-	UMediaSoundComponent* SoundComponent = NewObject<UMediaSoundComponent>(this);
+	/*UMediaSoundComponent* SoundComponent = NewObject<UMediaSoundComponent>(this);
 	SoundComponent->SetMediaPlayer(MediaPlayer);
-	SoundComponent->RegisterComponent();
+	SoundComponent->RegisterComponent();*/
 
-	// Switching to Screen widget.
-	WidgetSwitcher->SetActiveWidgetIndex(1);
+	// Set Brush from MediaTexture.
+	Screen->Brush.SetResourceObject(MediaTexture);
+	const float InitialSizeX = MediaTexture->GetWidth() / 1000.f;
+	const float InitialSizeY = MediaTexture->GetHeight() / 1000.f;
+	Screen->SetRenderScale(FVector2D(InitialSizeX, InitialSizeY));
+}
+
+void UVideoPlayerWidget::InitPictureScreen() const
+{
+	if (UTexture2D* ImageTexture = UKismetRenderingLibrary::ImportFileAsTexture2D(GetWorld(), FilePath))
+	{
+		Screen->Brush.SetResourceObject(ImageTexture);
+		const float InitialSizeX = ImageTexture->GetSizeX() / 1000.f;
+		const float InitialSizeY = ImageTexture->GetSizeY() / 1000.f;
+		Screen->SetRenderScale(FVector2D(InitialSizeX, InitialSizeY));
+	}
 }
 
 void UVideoPlayerWidget::OnScaleChanged(float Scale)
 {
 	if (Screen)
 	{
-		Screen->SetRenderScale(FVector2D(Scale));
+		const float ScalingFactor = 1000.f / Scale;
+		float SizeX;
+		float SizeY;
+
+		// If playing a video file.
+		if (bIsVideoFile)
+		{
+			SizeX = MediaTexture->GetWidth();
+			SizeY = MediaTexture->GetHeight();
+			Screen->SetRenderScale(FVector2D(SizeX, SizeY) / ScalingFactor);
+		}
+		else // If showing a picture.
+		{
+			if (const UTexture2D* Texture = Cast<UTexture2D>(Screen->Brush.GetResourceObject()))
+			{
+				SizeX = Texture->GetSizeX();
+				SizeY = Texture->GetSizeY();
+				Screen->SetRenderScale(FVector2D(SizeX, SizeY) / ScalingFactor);
+			}
+		}
 	}
 }

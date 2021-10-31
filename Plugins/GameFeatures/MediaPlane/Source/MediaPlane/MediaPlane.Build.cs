@@ -26,6 +26,7 @@ public class MediaPlane : ModuleRules
 			new string[]
 			{
 				"Core",
+				"MediaAssets", // For UMediaTexture
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,6 +39,7 @@ public class MediaPlane : ModuleRules
 				"Engine",
 				"MediaAssets", // For UMediaPlayer
 				"DesktopPlatform", // For Platform tools
+				"SlateCore", // For FSlateBrush
 				"Slate",
 				"UMG",
 				// ... add private dependencies that you statically link with here ...	
