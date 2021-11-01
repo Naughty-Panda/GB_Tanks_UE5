@@ -37,6 +37,23 @@ int32 UInventoryComponent::GetItemsNum() const
 	return Items.Num();
 }
 
+int32 UInventoryComponent::GetMaxItemAmount(int32 SlotIndex, const FInventoryItemInfo& Item) const
+{
+	// Check if the Slot already contains something.
+	if (const FInventorySlotInfo* InfoPtr = Items.Find(SlotIndex))
+	{
+		// Check if the Slot already contain the same item we want to drop in it.
+		if (InfoPtr->ID != Item.ID)
+		{
+			// Can't drop an item.
+			return 0;
+		}
+	}
+
+	// Can drop any number of same items.
+	return -1;
+}
+
 void UInventoryComponent::SetItem(int32 SlotIndex, const FInventorySlotInfo& InItem)
 {
 	ClearItem(SlotIndex);

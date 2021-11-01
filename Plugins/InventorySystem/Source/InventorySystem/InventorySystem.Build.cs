@@ -18,6 +18,7 @@ public class InventorySystem : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
+				"EquipmentSystem/Public/",
 			}
 			);
 			
@@ -51,5 +52,12 @@ public class InventorySystem : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+
+
+		// Not working...
+		PublicIncludePathModuleNames.AddRange(new string[]
+		{
+			"EquipmentSystem",
+		});
 	}
 }

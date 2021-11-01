@@ -15,7 +15,8 @@ UENUM(BlueprintType, Blueprintable)
 enum class EItemType : uint8
 {
 	IT_None,
-	IT_Currency
+	IT_Currency,
+	IT_Equipment
 };
 
 UENUM(BlueprintType, Blueprintable)
@@ -26,6 +27,18 @@ enum class EItemRarity : uint8
 	IR_Magic,
 	IR_Epic,
 	IR_Legendary
+};
+
+UENUM(BlueprintType, Blueprintable)
+enum class EEquipmentSlot : uint8
+{
+	ES_None,
+	ES_Head,
+	ES_Body,
+	ES_LeftArm,
+	ES_RightArm,
+	ES_Legs,
+	ES_Feet
 };
 
 USTRUCT(BlueprintType)
@@ -54,6 +67,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Types")
 	EItemRarity ItemRarity;
+
+	UPROPERTY(EditAnywhere, Category="Types")
+	EEquipmentSlot EquipmentSlot;
 
 	/** Item visuals */
 	UPROPERTY(EditAnywhere, Category="Visuals")

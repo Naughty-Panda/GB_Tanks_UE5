@@ -12,6 +12,7 @@ class UInventoryWidget;
 class UDataTable;
 class UInventoryComponent;
 struct FInventoryItemInfo;
+enum class EEquipmentSlot : uint8;
 
 /**
  * Inventory Manager Actor Component.
@@ -24,6 +25,7 @@ class INVENTORYSYSTEM_API UInventoryManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
+	/** Inventory part */
 	UPROPERTY()
 	UInventoryComponent* LocalInventoryComponent;
 
@@ -39,6 +41,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Inventory")
 	int32 MinInventorySize = 20;
 
+	/** Inventory part */
+	UPROPERTY()
+	UInventoryWidget* EquipmentWidget;
+
+	UPROPERTY(EditAnywhere, Category="Equipment")
+	TSubclassOf<UInventoryWidget> EquipmentWidgetClass;
+
 public:
 	// Sets default values for this component's properties
 	UInventoryManagerComponent();
@@ -53,6 +62,15 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void Init(UInventoryComponent* InComponent);
+	void InitInventory(UInventoryComponent* InComponent);
 	FORCEINLINE FInventoryItemInfo* GetItemData(FName ItemID) const;
+
+	// Equipment Component Initialization
+	void InitEquipment(UInventoryComponent* InComponent);
+
+	// Equipment methods
+	void EquipItem(EEquipmentSlot EquipSlot, FName ItemID);
+	void UnequipItem(EEquipmentSlot EquipSlot, FName ItemID);
+
+	UStaticMeshComponent* GetEquipmentComponent(EEquipmentSlot EquipSlot) const;
 };

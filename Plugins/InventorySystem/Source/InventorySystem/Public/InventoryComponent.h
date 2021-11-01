@@ -37,6 +37,7 @@ public:
 	FInventorySlotInfo* GetItem(int32 SlotIndex);
 	const TMap<int32, FInventorySlotInfo>& GetItems();
 	int32 GetItemsNum() const;
+	virtual int32 GetMaxItemAmount(int32 SlotIndex, const FInventoryItemInfo& Item) const;
 	virtual void SetItem(int32 SlotIndex, const FInventorySlotInfo& InItem);
 	void ClearItem(int32 SlotIndex);
 };
