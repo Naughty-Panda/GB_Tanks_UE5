@@ -13,7 +13,7 @@ public class GB_Tanks_UE5 : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { "ModularGameplay", });
 		
 		// Add dependency to our Inventory System Plugin.
-		PublicDependencyModuleNames.AddRange(new string[] { "InventorySystem", });
+		PublicDependencyModuleNames.AddRange(new string[] { "InventorySystem", "EquipmentSystem", });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

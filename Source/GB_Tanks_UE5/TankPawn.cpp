@@ -7,8 +7,11 @@
 #include "EnhancedInputSubsystems.h"
 
 // Inventory plugin includes
-#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryComponent.h"
-#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryManagerComponent.h"
+#include "EquipmentComponent.h"
+#include "InventoryComponent.h"
+#include "InventoryManagerComponent.h"
+//#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryComponent.h"
+//#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryManagerComponent.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -32,8 +35,9 @@ ATankPawn::ATankPawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	// Inventory plugin components setup
+	// Inventory & Equipmentplugin components setup
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
+	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment Component"));
 	InventoryManagerComponent = CreateDefaultSubobject<UInventoryManagerComponent>(TEXT("Inventory Mnanger Component"));
 }
 
@@ -53,8 +57,9 @@ void ATankPawn::BeginPlay()
 
 	PlayerController = Cast<ATankPlayerController>(GetController());
 
-	// Init Inventory Component
-	InventoryManagerComponent->Init(InventoryComponent);
+	// Init Inventory & Equipment Components
+	InventoryManagerComponent->InitInventory(InventoryComponent);
+	InventoryManagerComponent->InitEquipment(EquipmentComponent);
 }
 
 // PawnClientRestart can run more than once in an Actor's lifetime

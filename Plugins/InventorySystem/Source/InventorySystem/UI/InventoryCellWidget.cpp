@@ -22,6 +22,12 @@ bool UInventoryCellWidget::AddItem(const FInventorySlotInfo& InItem, const FInve
 		return false;
 	}
 
+	if (InItem.Count <= 0)
+	{
+		Clear();
+		return true;
+	}
+
 	if (ItemImage)
 	{
 		ItemImage->SetBrushFromTexture(InInfo.Icon.Get());

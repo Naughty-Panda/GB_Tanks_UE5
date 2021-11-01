@@ -43,10 +43,15 @@ public:
 	/** Item Drop Delegate */
 	FOnItemDrop OnItemDrop;
 
+	/** Can be an Inventory Component or Equipment Component */
+	UPROPERTY()
+	UInventoryComponent* RepresentedComponent;
+
 public:
 	virtual void NativeConstruct() override;
 
 	void Init(int32 NumSlots);
+	void InitCellWidget(UInventoryCellWidget* Cell);
 	bool AddItem(const FInventorySlotInfo& Item, const FInventoryItemInfo& ItemInfo, int32 SlotPosition = -1);
 
 protected:

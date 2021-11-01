@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "TankBase.h"
-#include "InputMappingContext.h"
+//#include "InputMappingContext.h"
 
 #include "TankPawn.generated.h"
 
@@ -14,7 +14,9 @@ class ATankPlayerController;
 class UCameraShakeBase;
 class UForceFeedbackEffect;
 class UInventoryComponent;
+class UEquipmentComponent;
 class UInventoryManagerComponent;
+class UInputMappingContext;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public ATankBase
@@ -58,6 +60,10 @@ protected:
 	/** Inventory plugin components */
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
+
+	/** Equipment Component from Inventory Plugin */
+	UPROPERTY(EditAnywhere, Category = "Inventory|Equipment")
+	UEquipmentComponent* EquipmentComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	UInventoryManagerComponent* InventoryManagerComponent;

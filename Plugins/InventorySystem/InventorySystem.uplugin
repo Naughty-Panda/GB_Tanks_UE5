@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "InventorySystem",
+	"FriendlyName": "Inventory and equipment system",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "Naughty Panda",
@@ -17,6 +17,11 @@
 	"Modules": [
 		{
 			"Name": "InventorySystem",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "EquipmentSystem",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

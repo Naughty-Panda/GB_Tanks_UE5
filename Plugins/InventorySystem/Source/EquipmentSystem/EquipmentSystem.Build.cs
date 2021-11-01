@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
-public class InventorySystem : ModuleRules
+public class EquipmentSystem : ModuleRules
 {
-	public InventorySystem(ReadOnlyTargetRules Target) : base(Target)
+	public EquipmentSystem(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -17,8 +17,8 @@ public class InventorySystem : ModuleRules
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
+				"../../../Source/GB_Tanks_UE5/",
 				// ... add other private include paths required here ...
-				"EquipmentSystem/Public/",
 			}
 			);
 			
@@ -27,6 +27,7 @@ public class InventorySystem : ModuleRules
 			new string[]
 			{
 				"Core",
+				"InventorySystem",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -52,12 +53,5 @@ public class InventorySystem : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-
-
-		// Not working...
-		PublicIncludePathModuleNames.AddRange(new string[]
-		{
-			"EquipmentSystem",
-		});
 	}
 }

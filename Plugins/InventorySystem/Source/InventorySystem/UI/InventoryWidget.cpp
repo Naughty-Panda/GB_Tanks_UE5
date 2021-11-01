@@ -6,6 +6,12 @@
 void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	// Init Cells for our Equipment widget.
+	for (UInventoryCellWidget* Cell : CellWidgets)
+	{
+		InitCellWidget(Cell);
+	}
 }
 
 void UInventoryWidget::Init(int32 NumSlots)
@@ -24,6 +30,15 @@ void UInventoryWidget::Init(int32 NumSlots)
 				ItemCellsGrid->AddChildToUniformGrid(NewCell, SlotIndex / ItemsInRow, SlotIndex % ItemsInRow);
 			}
 		}
+	}
+}
+
+void UInventoryWidget::InitCellWidget(UInventoryCellWidget* Cell)
+{
+	if (Cell)
+	{
+		Cell->OnItemDrop.AddUObject(this, &UInventoryWidget::OnItemDropped);
+		Cell->ParentInventoryWidget = this;
 	}
 }
 
@@ -83,9 +98,11 @@ UInventoryCellWidget* UInventoryWidget::CreateCellWidget()
 	{
 		// Creating new Cell Widget and binding its delegate.
 		UInventoryCellWidget* NewCell = CreateWidget<UInventoryCellWidget>(this, CellWidgetClass);
-		NewCell->OnItemDrop.AddUObject(this, &UInventoryWidget::OnItemDropped);
 
 		CellWidgets.Add(NewCell);
+
+		InitCellWidget(NewCell);
+
 		return NewCell;
 	}
 
