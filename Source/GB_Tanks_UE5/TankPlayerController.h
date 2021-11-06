@@ -73,7 +73,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="UI")
 	AUIManager* GetUIManager() const;
 
-
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
