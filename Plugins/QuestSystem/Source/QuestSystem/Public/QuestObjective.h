@@ -25,15 +25,17 @@ class QUESTSYSTEM_API UQuestObjective : public UObject
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	UPROPERTY(EditAnywhere)
 	FText Description;
 
 	UPROPERTY(EditAnywhere)
 	EObjectiveType ObjectiveType;
 
+public:
 	UPROPERTY(VisibleAnywhere)
 	uint8 bIsCompleted :1;
+
 	UPROPERTY(VisibleAnywhere)
 	uint8 bCanBeCompleted :1;
 
@@ -41,7 +43,12 @@ public:
 	FOnObjectiveCompleted OnObjectiveCompleted;
 
 public:
-	virtual void ActivateObjective(AActor* Instigator) {}
+	FText GetDescription() const { return Description; }
+	EObjectiveType GetObjectiveType() const { return ObjectiveType; }
+
+	virtual void ActivateObjective(AActor* Instigator)
+	{
+	}
 };
 
 /**
