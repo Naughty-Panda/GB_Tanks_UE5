@@ -10,36 +10,53 @@
 
 class UQuestObjective;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnQuestStatusUpdated, AQuest* UpdatedQuest);
+
 UCLASS()
 class QUESTSYSTEM_API AQuest : public AActor
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditAnywhere)
+protected:
+	UPROPERTY(EditAnywhere, Category="Quest")
 	FText Name;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Quest")
 	FText Description;
 
-	UPROPERTY(EditAnywhere)
-	TArray<UQuestObjective*> Objectives;
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Quest")
 	AQuest* PreviousQuest;
 
-	UPROPERTY(EditAnywhere)
+public:
+	UPROPERTY(EditAnywhere, Category="Quest")
 	uint8 bIsStoryQuest :1;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Quest")
 	uint8 bKeepObjectivesOrder :1;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Quest")
 	uint8 bIsTaken :1;
+
+	FOnQuestStatusUpdated OnQuestStatusUpdated;
+
+protected:
+	UPROPERTY(EditAnywhere, Category="Quest")
+	TArray<UQuestObjective*> Objectives;
 
 public:
 	// Sets default values for this actor's properties
 	AQuest();
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
+	FText GetQuestName() const { return Name; }
+	FText GetQuestDescription() const { return Description; }
+	const AQuest* GetPreviousQuest() const { return PreviousQuest; }
+	bool IsCompleted() const;
+
+	UFUNCTION(BlueprintPure)
+	const TArray<UQuestObjective*>& GetObjectives() const;
+
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void UpdateLocation();
 
@@ -55,19 +72,19 @@ public:
 
 #if WITH_EDITOR
 
-	UFUNCTION(CallInEditor)
+	UFUNCTION(CallInEditor, Category="Quest")
 	void AddInteractionObjective()
 	{
 		Objectives.Add(NewObject<UInteractionObjective>(this));
 	}
 
-	UFUNCTION(CallInEditor)
+	UFUNCTION(CallInEditor, Category="Quest")
 	void AddLocationObjective()
 	{
 		Objectives.Add(NewObject<ULocationObjective>(this));
 	}
 
-	UFUNCTION(CallInEditor)
+	UFUNCTION(CallInEditor, Category="Quest")
 	void AddCollectionObjective()
 	{
 		Objectives.Add(NewObject<UCollectionObjective>(this));

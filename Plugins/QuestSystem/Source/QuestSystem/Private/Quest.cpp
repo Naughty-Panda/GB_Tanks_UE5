@@ -14,6 +14,35 @@ AQuest::AQuest()
 	bKeepObjectivesOrder = false;
 }
 
+void AQuest::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+bool AQuest::IsCompleted() const
+{
+	// Check only last objective if objectives order is required.
+	if (bKeepObjectivesOrder)
+	{
+		return Objectives.Last()->bIsCompleted;
+	}
+
+	for (const auto* Objective : Objectives)
+	{
+		if (!Objective->bIsCompleted)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+const TArray<UQuestObjective*>& AQuest::GetObjectives() const
+{
+	return Objectives;
+}
+
 void AQuest::UpdateLocation()
 {
 	if (AActor* ParentActor = GetParentActor())
@@ -39,7 +68,7 @@ void AQuest::TakeQuest(AActor* Character)
 		}
 
 		Objective->ActivateObjective(Character);
-		Objective->bIsCompleted = i == 0 || !bKeepObjectivesOrder;
+		Objective->bCanBeCompleted = i == 0 || !bKeepObjectivesOrder;
 		Objective->OnObjectiveCompleted.AddDynamic(this, &ThisClass::OnObjectiveCompleted);
 	}
 
@@ -57,5 +86,5 @@ void AQuest::OnObjectiveCompleted(UQuestObjective* Objective)
 		}
 	}
 
-	// OnQuestStatusUpdated.Broadcast(this);
+	OnQuestStatusUpdated.Broadcast(this);
 }

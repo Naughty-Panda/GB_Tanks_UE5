@@ -2,7 +2,9 @@
 
 #include "UIManager.h"
 #include "MinimapUMGWidget.h"
+#include "../../../Plugins/QuestSystem/Source/QuestSystem/Public/UI/QuestLogWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "GB_Tanks_UE5/TankPawn.h"
 
 AUIManager::AUIManager()
 {
@@ -28,6 +30,25 @@ void AUIManager::SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrde
 	{
 		AddWidgetByClass(*WidgetClass, ZOrder);
 		ActiveWidgetType = WidgetType;
+	}
+}
+
+void AUIManager::ToggleQuestLogVisibility()
+{
+	// If Quest Log exists - remove it and return.
+	if (QuestLog)
+	{
+		QuestLog->RemoveFromParent();
+		QuestLog = nullptr;
+		return;
+	}
+
+	// If there is no Quest Log - Create new widget and add it to viewport.
+	if (QuestLogWidgetClass)
+	{
+		QuestLog = CreateWidget<UQuestLogWidget>(GetOwningPlayerController(), QuestLogWidgetClass);
+		QuestLog->Init(Cast<ATankPawn>(GetOwningPawn())->GetQuestListComponent());
+		QuestLog->AddToViewport();
 	}
 }
 

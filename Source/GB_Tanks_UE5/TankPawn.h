@@ -17,6 +17,7 @@ class UInventoryComponent;
 class UEquipmentComponent;
 class UInventoryManagerComponent;
 class UInputMappingContext;
+class UQuestListComponent;
 
 UCLASS()
 class GB_TANKS_UE5_API ATankPawn : public ATankBase
@@ -68,6 +69,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	UInventoryManagerComponent* InventoryManagerComponent;
 
+	/** Quest System plugin component */
+	UPROPERTY(EditAnywhere, Category = "Quest")
+	UQuestListComponent* QuestListComponent;
+
 private:
 	UPROPERTY()
 	ATankPlayerController* PlayerController;
@@ -89,4 +94,7 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category="Quest")
+	UQuestListComponent* GetQuestListComponent() const { return QuestListComponent; }
 };

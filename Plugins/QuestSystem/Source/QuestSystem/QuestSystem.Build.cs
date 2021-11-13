@@ -26,6 +26,7 @@ public class QuestSystem : ModuleRules
 			new string[]
 			{
 				"Core",
+				"UMG",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,7 +39,6 @@ public class QuestSystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"UMG",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
