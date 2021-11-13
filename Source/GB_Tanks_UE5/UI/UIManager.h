@@ -8,6 +8,9 @@
 
 #include "UIManager.generated.h"
 
+class UQuestLogWidget;
+
+
 /**
  * 
  */
@@ -26,13 +29,27 @@ private:
 
 	EWidgetType ActiveWidgetType = EWidgetType::WT_None;
 
+	/**
+	 * Quest System
+	 */
+
+private:
+	UPROPERTY()
+	UQuestLogWidget* QuestLog;
+
+	UPROPERTY(EditAnywhere, Category="Widgets|Quest")
+	TSubclassOf<UQuestLogWidget> QuestLogWidgetClass;
+
 public:
 	AUIManager();
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category="UI")
 	void SetActiveWidget(const EWidgetType WidgetType, const int32 ZOrder = 0);
-	
+
+	UFUNCTION(BlueprintCallable, Category="Quest")
+	void ToggleQuestLogVisibility();
+
 	void AddWidgetByClass(const TSubclassOf<UUserWidget> WidgetClass, const int32 ZOrder = 0);
 	void RemoveActiveWidget();
 	void UpdatePlayerPositionOnMinimap(const FVector2D& InPosition);

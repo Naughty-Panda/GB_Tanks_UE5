@@ -10,6 +10,9 @@
 #include "EquipmentComponent.h"
 #include "InventoryComponent.h"
 #include "InventoryManagerComponent.h"
+
+// Quest System plugin includes
+#include "QuestListComponent.h"
 //#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryComponent.h"
 //#include "../Plugins/InventorySystem/Source/InventorySystem/Public/InventoryManagerComponent.h"
 
@@ -39,6 +42,9 @@ ATankPawn::ATankPawn()
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
 	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment Component"));
 	InventoryManagerComponent = CreateDefaultSubobject<UInventoryManagerComponent>(TEXT("Inventory Mnanger Component"));
+
+	// Quest System component setup
+	QuestListComponent = CreateDefaultSubobject<UQuestListComponent>(TEXT("QuestList Component"));
 }
 
 void ATankPawn::CameraZoom(float AxisValue)
