@@ -16,12 +16,12 @@ static const FName QuestEditorTabName("QuestEditor");
 void FQuestEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
+
 	FQuestEditorStyle::Initialize();
 	FQuestEditorStyle::ReloadTextures();
 
 	FQuestEditorCommands::Register();
-	
+
 	PluginCommands = MakeShareable(new FUICommandList);
 
 	PluginCommands->MapAction(
@@ -30,10 +30,28 @@ void FQuestEditorModule::StartupModule()
 		FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FQuestEditorModule::RegisterMenus));
-	
+
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(QuestEditorTabName, FOnSpawnTab::CreateRaw(this, &FQuestEditorModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FQuestEditorTabTitle", "QuestEditor"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
+	                        .SetDisplayName(LOCTEXT("FQuestEditorTabTitle", "QuestEditor"))
+	                        .SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	// End of Unreal-generated code.
+
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+
+	// Create Menu Extension.
+	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
+	MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands,
+	                               FMenuExtensionDelegate::CreateRaw(this, &FQuestEditorModule::AddMenuExtension));
+
+	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+
+	// Create Toolbar extension.
+	TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
+	ToolbarExtender->AddToolBarExtension("EditorModes", EExtensionHook::After, PluginCommands,
+	                                     FToolBarExtensionDelegate::CreateRaw(this, &FQuestEditorModule::AddToolbarExtension));
+
+	LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 }
 
 void FQuestEditorModule::ShutdownModule()
@@ -58,7 +76,7 @@ TSharedRef<SDockTab> FQuestEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& S
 		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
 		FText::FromString(TEXT("FQuestEditorModule::OnSpawnPluginTab")),
 		FText::FromString(TEXT("QuestEditor.cpp"))
-		);
+	);
 
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
@@ -84,14 +102,20 @@ void FQuestEditorModule::RegisterMenus()
 	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
 	FToolMenuOwnerScoped OwnerScoped(this);
 
-	{
-		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+	// We replaced this with our code in StartupModule().
+	// Menu Extender.
+	/*
 		{
-			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(FQuestEditorCommands::Get().OpenPluginWindow, PluginCommands);
+			UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+			{
+				FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
+				Section.AddMenuEntryWithCommandList(FQuestEditorCommands::Get().OpenPluginWindow, PluginCommands);
+			}
 		}
-	}
+	*/
 
+	// Toolbar Extender.
+	/*
 	{
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar");
 		{
@@ -102,8 +126,19 @@ void FQuestEditorModule::RegisterMenus()
 			}
 		}
 	}
+	*/
+}
+
+void FQuestEditorModule::AddMenuExtension(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.AddMenuEntry(FQuestEditorCommands::Get().OpenPluginWindow);
+}
+
+void FQuestEditorModule::AddToolbarExtension(FToolBarBuilder& ToolBarBuilder)
+{
+	ToolBarBuilder.AddToolBarButton(FQuestEditorCommands::Get().OpenPluginWindow);
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FQuestEditorModule, QuestEditor)
