@@ -24,6 +24,11 @@
 			"Name": "QuestEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "QuestHighlighter",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	]
 }
