@@ -9,6 +9,10 @@ class FQuestHighlighterEdMode : public FEdMode
 {
 public:
 	const static FEditorModeID EM_QuestHighlighterEdModeId;
+
+protected:
+	TArray<AActor*> SelectedActors;
+
 public:
 	FQuestHighlighterEdMode();
 	virtual ~FQuestHighlighterEdMode();
@@ -21,4 +25,11 @@ public:
 	//virtual void ActorSelectionChangeNotify() override;
 	bool UsesToolkits() const override;
 	// End of FEdMode interface
+
+	virtual void Render(const FSceneView* View, FViewport* Viewport, FPrimitiveDrawInterface* PDI) override;
+	virtual void DrawHUD(FEditorViewportClient* ViewportClient, FViewport* Viewport, const FSceneView* View, FCanvas* Canvas) override;
+	virtual void ActorSelectionChangeNotify() override;
+
+protected:
+	void UpdateSelectedActors();
 };

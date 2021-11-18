@@ -108,7 +108,7 @@ void FQuestHighlighterEdModeToolkit::Init(const TSharedPtr<IToolkitHost>& InitTo
 
 FName FQuestHighlighterEdModeToolkit::GetToolkitFName() const
 {
-	return FName("QuestHighlighterEdMode");
+	return FName("Quest Highlighter");
 }
 
 FText FQuestHighlighterEdModeToolkit::GetBaseToolkitName() const
