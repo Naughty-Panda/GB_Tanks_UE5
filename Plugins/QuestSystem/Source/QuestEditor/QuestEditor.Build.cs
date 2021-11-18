@@ -26,6 +26,7 @@ public class QuestEditor : ModuleRules
 			new string[]
 			{
 				"Core",
+				"QuestSystem",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,7 +38,7 @@ public class QuestEditor : ModuleRules
 				"Projects",
 				"InputCore",
 				"EditorFramework",
-				"UnrealEd",
+				"UnrealEd", // Not allowed in Runtime Module Type!
 				"ToolMenus",
 				"CoreUObject",
 				"Engine",
