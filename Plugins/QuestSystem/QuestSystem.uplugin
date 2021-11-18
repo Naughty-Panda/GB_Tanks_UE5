@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "QuestSystem",
+	"FriendlyName": "Quest System and Quest Editor",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "Naughty Panda",
@@ -18,6 +18,11 @@
 		{
 			"Name": "QuestSystem",
 			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "QuestEditor",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
 	]
