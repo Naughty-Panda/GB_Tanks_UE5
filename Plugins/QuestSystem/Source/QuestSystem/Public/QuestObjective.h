@@ -25,12 +25,15 @@ class QUESTSYSTEM_API UQuestObjective : public UObject
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(EditAnywhere)
 	FText Description;
 
 	UPROPERTY(EditAnywhere)
 	EObjectiveType ObjectiveType;
+
+	UPROPERTY(VisibleAnywhere)
+	FName WorldTargetName = NAME_None;
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -45,6 +48,7 @@ public:
 public:
 	FText GetDescription() const { return Description; }
 	EObjectiveType GetObjectiveType() const { return ObjectiveType; }
+	FName GetWorldTargetName() const { return WorldTargetName; }
 
 	virtual void ActivateObjective(AActor* Instigator)
 	{

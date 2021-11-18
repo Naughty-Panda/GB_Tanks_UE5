@@ -17,7 +17,7 @@ class QUESTSYSTEM_API AQuest : public AActor
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(EditAnywhere, Category="Quest")
 	FText Name;
 

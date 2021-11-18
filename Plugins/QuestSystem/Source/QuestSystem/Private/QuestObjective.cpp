@@ -13,6 +13,8 @@
 UInteractionObjective::UInteractionObjective()
 {
 	ObjectiveType = EObjectiveType::OT_Interaction;
+
+	WorldTargetName = GET_MEMBER_NAME_CHECKED(ThisClass, Target);
 }
 
 void UInteractionObjective::ActivateObjective(AActor* Instigator)
@@ -40,6 +42,8 @@ void UInteractionObjective::Internal_CompleteObjective(AActor* Object, AActor* I
 ULocationObjective::ULocationObjective()
 {
 	ObjectiveType = EObjectiveType::OT_Location;
+
+	WorldTargetName = GET_MEMBER_NAME_CHECKED(ThisClass, Marker);
 }
 
 void ULocationObjective::ActivateObjective(AActor* Instigator)
@@ -64,6 +68,8 @@ void ULocationObjective::ActivateObjective(AActor* Instigator)
 UCollectionObjective::UCollectionObjective()
 {
 	ObjectiveType = EObjectiveType::OT_Collection;
+
+	WorldTargetName = GET_MEMBER_NAME_CHECKED(ThisClass, ItemToCollect);
 }
 
 void UCollectionObjective::ActivateObjective(AActor* Instigator)
