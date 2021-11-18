@@ -8,6 +8,7 @@
 #include "EditorModeManager.h"
 #include "Widgets/Colors/SColorBlock.h"
 #include "Widgets/Colors/SColorPicker.h"
+#include "Widgets/Colors/SColorWheel.h"
 
 #define LOCTEXT_NAMESPACE "FQuestHighlighterEdModeToolkit"
 
@@ -128,6 +129,14 @@ void FQuestHighlighterEdModeToolkit::Init(const TSharedPtr<IToolkitHost>& InitTo
 						.OnMouseButtonDown_Raw(this, &FQuestHighlighterEdModeToolkit::OnOpenNPCColor)
 					]
 				]
+				+SVerticalBox::Slot()
+				.HAlign(HAlign_Center)
+				.AutoHeight()
+				[
+					SNew(SColorWheel)
+					.SelectedColor(this, &FQuestHighlighterEdModeToolkit::GetNPCColor)
+					.OnValueChanged(this, &FQuestHighlighterEdModeToolkit::SetNPCColor)
+				]
 				
 				+SVerticalBox::Slot()
 				.HAlign(HAlign_Center)
@@ -151,6 +160,14 @@ void FQuestHighlighterEdModeToolkit::Init(const TSharedPtr<IToolkitHost>& InitTo
 						.Color_Raw(this, &FQuestHighlighterEdModeToolkit::GetObjectivesColor)
 						.OnMouseButtonDown_Raw(this, &FQuestHighlighterEdModeToolkit::OnOpenObjectivesColor)
 					]
+				]
+				+SVerticalBox::Slot()
+				.HAlign(HAlign_Center)
+				.AutoHeight()
+				[
+					SNew(SColorWheel)
+					.SelectedColor(this, &FQuestHighlighterEdModeToolkit::GetObjectivesColor)
+					.OnValueChanged(this, &FQuestHighlighterEdModeToolkit::SetObjectivesColor)
 				]
 		];
 		
