@@ -5,13 +5,21 @@
 #include "CoreMinimal.h"
 #include "EdMode.h"
 
+class UQuestObjective;
+class AQuestSystemCharacter;
+
 class FQuestHighlighterEdMode : public FEdMode
 {
 public:
 	const static FEditorModeID EM_QuestHighlighterEdModeId;
 
+	FLinearColor NPCColor = FLinearColor::Yellow;
+	FLinearColor ObjectivesColor = FLinearColor::Blue;
+	float ObjectivesSphereRadius = 128.f;
+
 protected:
-	TArray<AActor*> SelectedActors;
+	TArray<AQuestSystemCharacter*> SelectedNPCs;
+	TArray<UQuestObjective*> SelectedObjectives;
 
 public:
 	FQuestHighlighterEdMode();

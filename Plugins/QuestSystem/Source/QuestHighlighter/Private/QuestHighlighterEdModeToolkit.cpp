@@ -6,6 +6,8 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 #include "EditorModeManager.h"
+#include "Widgets/Colors/SColorBlock.h"
+#include "Widgets/Colors/SColorPicker.h"
 
 #define LOCTEXT_NAMESPACE "FQuestHighlighterEdModeToolkit"
 
@@ -101,6 +103,55 @@ void FQuestHighlighterEdModeToolkit::Init(const TSharedPtr<IToolkitHost>& InitTo
 					Locals::MakeButton(LOCTEXT("DownButtonLabel", "Down"), FVector(0, 0, -Factor))
 				]
 
+				// Our widgets.
+				+SVerticalBox::Slot()
+				.HAlign(HAlign_Center)
+				.Padding(1.f, 10.f)
+				.AutoHeight()
+				[
+					SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(STextBlock)
+						.AutoWrapText(true)
+						.Text(LOCTEXT("NPCColor", "NPC Color:"))
+					]
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					.Padding(5.f, 0.f)
+					[
+						SNew(SColorBlock)
+						.AlphaDisplayMode(EColorBlockAlphaDisplayMode::Ignore)
+						.Size(FVector2D(50.f,16.f))
+						.Color_Raw(this, &FQuestHighlighterEdModeToolkit::GetNPCColor)
+						.OnMouseButtonDown_Raw(this, &FQuestHighlighterEdModeToolkit::OnOpenNPCColor)
+					]
+				]
+				
+				+SVerticalBox::Slot()
+				.HAlign(HAlign_Center)
+				.AutoHeight()
+				[
+					SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(STextBlock)
+						.AutoWrapText(true)
+						.Text(LOCTEXT("ObjectiveColor", "Objective Color:"))
+					]
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					.Padding(5.f, 0.f)
+					[
+						SNew(SColorBlock)
+						.AlphaDisplayMode(EColorBlockAlphaDisplayMode::Ignore)
+						.Size(FVector2D(50.f,16.f))
+						.Color_Raw(this, &FQuestHighlighterEdModeToolkit::GetObjectivesColor)
+						.OnMouseButtonDown_Raw(this, &FQuestHighlighterEdModeToolkit::OnOpenObjectivesColor)
+					]
+				]
 		];
 		
 	FModeToolkit::Init(InitToolkitHost);
@@ -114,6 +165,59 @@ FName FQuestHighlighterEdModeToolkit::GetToolkitFName() const
 FText FQuestHighlighterEdModeToolkit::GetBaseToolkitName() const
 {
 	return NSLOCTEXT("QuestHighlighterEdModeToolkit", "DisplayName", "QuestHighlighterEdMode Tool");
+}
+
+FLinearColor FQuestHighlighterEdModeToolkit::GetNPCColor() const
+{
+	const auto* Mode = StaticCast<FQuestHighlighterEdMode*>(GetEditorMode());
+	return Mode->NPCColor;
+}
+
+void FQuestHighlighterEdModeToolkit::SetNPCColor(FLinearColor NewColor)
+{
+	auto* Mode = StaticCast<FQuestHighlighterEdMode*>(GetEditorMode());
+	Mode->NPCColor = NewColor;
+}
+
+FLinearColor FQuestHighlighterEdModeToolkit::GetObjectivesColor() const
+{
+	const auto* Mode = StaticCast<FQuestHighlighterEdMode*>(GetEditorMode());
+	return Mode->ObjectivesColor;
+}
+
+void FQuestHighlighterEdModeToolkit::SetObjectivesColor(FLinearColor NewColor)
+{
+	auto* Mode = StaticCast<FQuestHighlighterEdMode*>(GetEditorMode());
+	Mode->ObjectivesColor = NewColor;
+}
+
+FReply FQuestHighlighterEdModeToolkit::OnOpenNPCColor(const FGeometry&, const FPointerEvent&)
+{
+	FColorPickerArgs PickerArgs;
+	PickerArgs.bUseAlpha = false;
+	
+	// bIsModal = Open Picker in new window!
+	// Instead use PickerArgs.ParentWidget
+	PickerArgs.bIsModal = true;
+	PickerArgs.InitialColorOverride = GetNPCColor();
+	PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateSP(this, &FQuestHighlighterEdModeToolkit::SetNPCColor);
+
+	OpenColorPicker(PickerArgs);
+
+	return FReply::Handled();
+}
+
+FReply FQuestHighlighterEdModeToolkit::OnOpenObjectivesColor(const FGeometry&, const FPointerEvent&)
+{
+	FColorPickerArgs PickerArgs;
+	PickerArgs.bUseAlpha = false;
+	PickerArgs.bIsModal = true;
+	PickerArgs.InitialColorOverride = GetObjectivesColor();
+	PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateSP(this, &FQuestHighlighterEdModeToolkit::SetObjectivesColor);
+
+	OpenColorPicker(PickerArgs);
+
+	return FReply::Handled();
 }
 
 class FEdMode* FQuestHighlighterEdModeToolkit::GetEditorMode() const

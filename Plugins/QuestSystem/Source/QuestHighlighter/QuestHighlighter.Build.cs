@@ -42,6 +42,8 @@ public class QuestHighlighter : ModuleRules
 				"EditorFramework",
 				"UnrealEd",
 				"LevelEditor",
+				"QuestSystem",
+				"AppFramework",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -5,6 +5,12 @@
 #include "Toolkits/ToolkitManager.h"
 #include "EditorModeManager.h"
 #include "Selection.h"
+#include "EngineUtils.h"
+
+// QuestSystem includes
+#include "Quest.h"
+#include "QuestSystemCharacter.h"
+#include "QuestObjective.h"
 
 const FEditorModeID FQuestHighlighterEdMode::EM_QuestHighlighterEdModeId = TEXT("EM_QuestHighlighterEdMode");
 
@@ -46,14 +52,17 @@ bool FQuestHighlighterEdMode::UsesToolkits() const
 
 void FQuestHighlighterEdMode::Render(const FSceneView* View, FViewport* Viewport, FPrimitiveDrawInterface* PDI)
 {
-	for (AActor* Actor : SelectedActors)
+	for (AQuestSystemCharacter* NPC : SelectedNPCs)
 	{
 		// Draw Box.
-		DrawWireBox(PDI, Actor->GetComponentsBoundingBox(true), FColor::Yellow, 1);
+		DrawWireBox(PDI, NPC->GetComponentsBoundingBox(true), NPCColor, 1);
+	}
 
+	for (UQuestObjective* Objective : SelectedObjectives)
+	{
 		// Draw Sphere.
-		const float SphereRadius = (Actor->GetComponentsBoundingBox(true).GetCenter() - Actor->GetComponentsBoundingBox().Max).Size();
-		DrawWireSphere(PDI, Actor->GetComponentsBoundingBox(true).GetCenter(), FColor::Cyan, SphereRadius, 32, 1);
+		const FVector SphereCenter = Objective->GetObjectiveTarget()->GetComponentsBoundingBox(true).GetCenter();
+		DrawWireSphere(PDI, SphereCenter, ObjectivesColor, ObjectivesSphereRadius, 32, 1);
 	}
 
 	FEdMode::Render(View, Viewport, PDI);
@@ -68,9 +77,10 @@ void FQuestHighlighterEdMode::DrawHUD(FEditorViewportClient* ViewportClient, FVi
 		return;
 	}
 
-	for (AActor* Actor : SelectedActors)
+	// Drawing HUD for NPCs.
+	for (AQuestSystemCharacter* NPC : SelectedNPCs)
 	{
-		const FBox ActorBounds = Actor->GetComponentsBoundingBox(true);
+		const FBox ActorBounds = NPC->GetComponentsBoundingBox(true);
 
 		const FVector DrawLocation = ActorBounds.GetCenter() + FVector(0.f, 0.f, ActorBounds.GetExtent().Z);
 
@@ -81,9 +91,28 @@ void FQuestHighlighterEdMode::DrawHUD(FEditorViewportClient* ViewportClient, FVi
 		// Adjust render to DPI scale.
 		DrawPixel /= ViewportClient->GetDPIScale();
 
-		const FText DrawText = FText::FromString(Actor->GetName());
+		const FText DrawText = FText::FromString(NPC->GetName());
 
-		Canvas->DrawShadowedText(DrawPixel.X, DrawPixel.Y, DrawText, GEngine->GetSmallFont(), FColor::Yellow);
+		Canvas->DrawShadowedText(DrawPixel.X, DrawPixel.Y, DrawText, GEngine->GetSmallFont(), NPCColor);
+	}
+
+	// Drawing HUD for Objectives.
+	for (UQuestObjective* Objective : SelectedObjectives)
+	{
+		const FBox ObjectiveBounds = Objective->GetObjectiveTarget()->GetComponentsBoundingBox(true);
+
+		const FVector DrawLocation = ObjectiveBounds.GetCenter() + FVector(0.f, 0.f, ObjectiveBounds.GetExtent().Z);
+
+		FVector2D DrawPixel;
+
+		View->WorldToPixel(DrawLocation, DrawPixel);
+
+		// Adjust render to DPI scale.
+		DrawPixel /= ViewportClient->GetDPIScale();
+
+		const FText DrawText = FText::FromString(Objective->GetName());
+
+		Canvas->DrawShadowedText(DrawPixel.X, DrawPixel.Y, DrawText, GEngine->GetSmallFont(), ObjectivesColor);
 	}
 }
 
@@ -96,16 +125,43 @@ void FQuestHighlighterEdMode::ActorSelectionChangeNotify()
 
 void FQuestHighlighterEdMode::UpdateSelectedActors()
 {
-	SelectedActors.Empty();
+	SelectedNPCs.Empty();
+	SelectedObjectives.Empty();
 
 	USelection* Selection = GEditor->GetSelectedActors();
 
 	// Making Iterator from Selection.
 	for (FSelectionIterator Iter(*Selection); Iter; ++Iter)
 	{
-		if (AActor* SelectedActor = Cast<AActor>(*Iter))
+		if (AQuestSystemCharacter* NPC = Cast<AQuestSystemCharacter>(*Iter))
 		{
-			SelectedActors.AddUnique(SelectedActor);
+			SelectedNPCs.AddUnique(NPC);
 		}
+	}
+
+	if (!SelectedNPCs.IsEmpty())
+	{
+		for (auto* NPC : SelectedNPCs)
+		{
+			TArray<AActor*> AttachedActors;
+			NPC->GetAttachedActors(AttachedActors);
+
+			for (AActor* Actor : AttachedActors)
+			{
+				if (AQuest* Quest = Cast<AQuest>(Actor))
+				{
+					SelectedObjectives.Append(Quest->GetObjectives());
+				}
+			}
+		}
+
+		return;
+	}
+
+	// Get all NPCs in current world.
+	auto* CurrentWorld = GEditor->GetEditorWorldContext().World();
+	for (TActorIterator<AQuestSystemCharacter> Iter(CurrentWorld, AQuestSystemCharacter::StaticClass()); Iter; ++Iter)
+	{
+		SelectedNPCs.AddUnique(*Iter);
 	}
 }

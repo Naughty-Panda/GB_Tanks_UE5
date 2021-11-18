@@ -49,6 +49,7 @@ public:
 	FText GetDescription() const { return Description; }
 	EObjectiveType GetObjectiveType() const { return ObjectiveType; }
 	FName GetWorldTargetName() const { return WorldTargetName; }
+	virtual AActor* GetObjectiveTarget() const { return nullptr; }
 
 	virtual void ActivateObjective(AActor* Instigator)
 	{
@@ -73,6 +74,7 @@ public:
 
 public:
 	virtual void ActivateObjective(AActor* Instigator) override;
+	virtual AActor* GetObjectiveTarget() const override { return Target; }
 
 private:
 	UFUNCTION()
@@ -97,6 +99,7 @@ public:
 
 public:
 	virtual void ActivateObjective(AActor* Instigator) override;
+	virtual AActor* GetObjectiveTarget() const override { return Marker; }
 };
 
 /**
@@ -126,4 +129,5 @@ public:
 
 public:
 	virtual void ActivateObjective(AActor* Instigator) override;
+	virtual AActor* GetObjectiveTarget() const override { return ItemToCollect; }
 };

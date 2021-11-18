@@ -21,6 +21,13 @@ public:
 	virtual TSharedPtr<class SWidget> GetInlineContent() const override { return ToolkitWidget; }
 
 private:
-
+	FLinearColor GetNPCColor() const;
+	void SetNPCColor(FLinearColor NewColor);
+	FLinearColor GetObjectivesColor() const;
+	void SetObjectivesColor(FLinearColor NewColor);
+	FReply OnOpenNPCColor(const FGeometry&, const FPointerEvent&);
+	FReply OnOpenObjectivesColor(const FGeometry&, const FPointerEvent&);
+	
+private:
 	TSharedPtr<SWidget> ToolkitWidget;
 };
