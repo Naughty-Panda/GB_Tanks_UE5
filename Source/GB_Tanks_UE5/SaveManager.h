@@ -43,6 +43,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SaveGame(const FString& SlotName);
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterForSave(AActor* TankToSave);
+
+	UFUNCTION()
+	void LoadInNewLevel();
+
 protected:
 	void OnGameLoadedAsync(const FString& SlotName, const int32 UserIndex, USaveGame* SaveGame);
 	void OnGameSavedAsync(const FString& SlotName, const int32 UserIndex, bool bIsSaved);
