@@ -97,4 +97,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Quest")
 	UQuestListComponent* GetQuestListComponent() const { return QuestListComponent; }
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 };

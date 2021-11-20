@@ -102,8 +102,10 @@ public:
 
 	void Fire(ECannonFireMode FireMode);
 	bool FORCEINLINE IsReadyToFire() const { return bReadyToFire && Ammo.HasAmmo(); }
+	const FCannonAmmo& GetAmmo() const { return Ammo; }
 	void FORCEINLINE AddAmmo(uint8 Amount) { Ammo.AddAmmo(Amount); }
 	bool FORCEINLINE HasFullAmmo() const { return Ammo.HasFullAmmo(); }
+	ECannonType GetCannonType() const { return CannonType; }
 
 protected:
 	// Called when the game starts or when spawned

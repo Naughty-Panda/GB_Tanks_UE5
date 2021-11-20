@@ -119,6 +119,7 @@ public:
 	void SetupCannon(TSubclassOf<ACannon> InCannon);
 	ACannon* GetPrimaryCannon() const;
 	ACannon* GetSecondaryCannon() const;
+	bool IsAIControlled() const { return bIsAIControlled; }
 	virtual void TakeDamage(const FDamageData& DamageData) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Turret")

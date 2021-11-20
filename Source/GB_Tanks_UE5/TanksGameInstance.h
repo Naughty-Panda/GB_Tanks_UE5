@@ -19,7 +19,7 @@ class GB_TANKS_UE5_API UTanksGameInstance : public UGameInstance
 protected:
 	UPROPERTY()
 	USaveManager* SaveManager;
-	
+
 public:
 	virtual void Init() override;
 
