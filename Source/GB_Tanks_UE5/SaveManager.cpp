@@ -135,3 +135,28 @@ void USaveManager::OnGameSavedAsync(const FString& SlotName, const int32 UserInd
 {
 	OnGameSaved.Broadcast(SlotName);
 }
+
+void USaveManager::FPathsExamples()
+{
+	FString ProjectDir = FPaths::ProjectDir();
+	FString TestFile = TEXT("G:/Unreal Projects/GB_Tanks_UE5/Saved/Logs/TestFile.txt");
+
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	// File Handle should be deleted manually!
+	IFileHandle* FileHandle = FileManager.OpenRead(*TestFile);
+
+	if (FileHandle)
+	{
+		int32 TestInt = INDEX_NONE;
+		uint8* ByteBuffer = reinterpret_cast<uint8*>(&TestInt);
+
+		FileHandle->Read(ByteBuffer, sizeof(int32));
+
+		delete FileHandle;
+		FileHandle = nullptr;
+	}
+
+	// Here is some functional as well.
+	FFileHelper FileHelper;
+}
