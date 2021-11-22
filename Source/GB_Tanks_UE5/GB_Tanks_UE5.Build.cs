@@ -15,6 +15,9 @@ public class GB_Tanks_UE5 : ModuleRules
 		// Add dependency to our Inventory System Plugin.
 		PublicDependencyModuleNames.AddRange(new string[] { "InventorySystem", "EquipmentSystem", });
 
+		// Json for save system testing.
+		PrivateDependencyModuleNames.AddRange(new string[] { "JsonUtilities", "Json", "XmlParser" ,"ExternalLibXML", });
+		
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
