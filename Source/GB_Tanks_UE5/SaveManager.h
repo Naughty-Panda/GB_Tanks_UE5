@@ -25,6 +25,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UTanksSaveGame* CurrentSave;
 
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FString> SaveSlots;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveAction OnGameSaved;
 
@@ -44,7 +47,22 @@ public:
 	void SaveGame(const FString& SlotName);
 
 	UFUNCTION(BlueprintCallable)
+	void SaveJsonFile();
+
+	UFUNCTION(BlueprintCallable)
+	void ReadJsonFile();
+
+	UFUNCTION(BlueprintCallable)
+	void SaveXMLFile();
+
+	UFUNCTION(BlueprintCallable)
+	void ReadXMLFile();
+
+	UFUNCTION(BlueprintCallable)
 	void RegisterForSave(AActor* TankToSave);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FString> GetSaveSlots() const;
 
 	UFUNCTION()
 	void LoadInNewLevel();
@@ -52,6 +70,9 @@ public:
 protected:
 	void OnGameLoadedAsync(const FString& SlotName, const int32 UserIndex, USaveGame* SaveGame);
 	void OnGameSavedAsync(const FString& SlotName, const int32 UserIndex, bool bIsSaved);
+
+	void WriteSaveSlotsToDisk() const;
+	void WriteSaveSlotsToDisk2() const;
 
 private:
 	void FPathsExamples();

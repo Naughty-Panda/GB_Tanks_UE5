@@ -7,7 +7,10 @@
 #include "TankPawn.h"
 #include "TanksSaveGame.h"
 #include "Components/HealthComponent.h"
+#include "JsonUtilities/Public/JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
+#include "XmlParser/Public/FastXml.h"
+#include "XmlParser/Public/XmlFile.h"
 
 void USaveManager::Init()
 {
@@ -15,6 +18,20 @@ void USaveManager::Init()
 
 	// Not really working...
 	GetWorld()->OnLevelsChanged().AddUObject(this, &USaveManager::LoadInNewLevel);
+
+	const FString SlotsPaths = FPaths::ProjectSavedDir() + TEXT("SaveGames/Slots.txt");
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (FileManager.FileExists(*SlotsPaths))
+	{
+		if (FFileHelper::LoadFileToStringArray(SaveSlots, *SlotsPaths))
+		{
+			for (const auto& Slot : SaveSlots)
+			{
+				GLog->Log(ELogVerbosity::Warning, TEXT("Slot found: ") + Slot);
+			}
+		}
+	}
 }
 
 bool USaveManager::IsSaveGameExists(const FString& SlotName)
@@ -62,6 +79,63 @@ void USaveManager::SaveGame(const FString& SlotName)
 	//UGameplayStatics::SaveGameToSlot(CurrentSave, SlotName, 0);
 }
 
+void USaveManager::SaveJsonFile()
+{
+	FTankSaveData SaveData;
+	SaveData.Location = FVector::UpVector;
+	SaveData.Rotation = FRotator::ZeroRotator;
+
+	FString JsonString;
+
+	if (FJsonObjectConverter::UStructToJsonObjectString(SaveData, JsonString))
+	{
+		const FString JsonFile = FPaths::ProjectSavedDir() + TEXT("SaveGames/JsonFile.json");
+		FFileHelper::SaveStringToFile(JsonString, *JsonFile);
+	}
+}
+
+void USaveManager::ReadJsonFile()
+{
+	const FString JsonFile = FPaths::ProjectSavedDir() + TEXT("SaveGames/JsonFile.json");
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*JsonFile))
+	{
+		return;
+	}
+
+	FString JsonString;
+
+	if (FFileHelper::LoadFileToString(JsonString, *JsonFile))
+	{
+		FTankSaveData SaveData;
+
+		if (FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &SaveData))
+		{
+			GLog->Log(ELogVerbosity::Warning, TEXT("Json file loaded!"));
+		}
+	}
+}
+
+void USaveManager::SaveXMLFile()
+{
+	// For testing only.
+	const FString XmlFilePath = FPaths::ProjectSavedDir() + TEXT("SaveGames/JsonFile.json");
+
+	FXmlFile XmlFile;
+	FXmlAttribute Attribute("Name", "Value");
+	XmlFile.Save(XmlFilePath);
+}
+
+void USaveManager::ReadXMLFile()
+{
+	// For testing only.
+	const FString XmlFilePath = FPaths::ProjectSavedDir() + TEXT("SaveGames/JsonFile.json");
+
+	FXmlFile XmlFile;
+	XmlFile.LoadFile(XmlFilePath);
+}
+
 void USaveManager::RegisterForSave(AActor* TankToSave)
 {
 	if (!TankToSave)
@@ -106,6 +180,29 @@ void USaveManager::RegisterForSave(AActor* TankToSave)
 	}
 }
 
+TArray<FString> USaveManager::GetSaveSlots() const
+{
+	TArray<FString> TempSlots;
+	TArray<FString> TempSlots2;
+
+	IFileManager& FileManager = IFileManager::Get();
+	IPlatformFile& FileManager2 = FPlatformFileManager::Get().GetPlatformFile();
+	FileManager.FindFiles(TempSlots, *FPaths::ProjectSavedDir(), TEXT(".sav"));
+	FileManager2.FindFiles(TempSlots2, *FPaths::ProjectSavedDir(), TEXT(".sav"));
+
+	for (const auto& Slot : TempSlots)
+	{
+		GLog->Log(ELogVerbosity::Warning, TEXT("Slot found: ") + Slot);
+	}
+
+	for (const auto& Slot : TempSlots2)
+	{
+		GLog->Log(ELogVerbosity::Warning, TEXT("Slot found: ") + Slot);
+	}
+
+	return SaveSlots;
+}
+
 void USaveManager::LoadInNewLevel()
 {
 	// Spawn new AI actors.
@@ -133,7 +230,40 @@ void USaveManager::OnGameLoadedAsync(const FString& SlotName, const int32 UserIn
 
 void USaveManager::OnGameSavedAsync(const FString& SlotName, const int32 UserIndex, bool bIsSaved)
 {
+	if (!SaveSlots.Contains(SlotName))
+	{
+		SaveSlots.Add(SlotName);
+		WriteSaveSlotsToDisk();
+	}
+
 	OnGameSaved.Broadcast(SlotName);
+}
+
+void USaveManager::WriteSaveSlotsToDisk() const
+{
+	const FString SlotsPaths = FPaths::ProjectSavedDir() + TEXT("SaveGames/Slots.txt");
+
+	if (FFileHelper::SaveStringArrayToFile(SaveSlots, *SlotsPaths))
+	{
+		for (const auto& Slot : SaveSlots)
+		{
+			GLog->Log(ELogVerbosity::Warning, TEXT("Slot saved: ") + Slot);
+		}
+	}
+}
+
+void USaveManager::WriteSaveSlotsToDisk2() const
+{
+	const FString SlotsPaths = FPaths::ProjectSavedDir() + TEXT("SaveGames/Slots.txt");
+
+	FString ExistingSaveSlotArray = "";
+	for (const FString& Slot : SaveSlots)
+	{
+		ExistingSaveSlotArray += Slot + ",";
+	}
+
+	FFileHelper::SaveStringToFile(ExistingSaveSlotArray, *SlotsPaths, FFileHelper::EEncodingOptions::ForceUnicode,
+	                              &IFileManager::Get(), FILEWRITE_EvenIfReadOnly);
 }
 
 void USaveManager::FPathsExamples()
@@ -157,6 +287,6 @@ void USaveManager::FPathsExamples()
 		FileHandle = nullptr;
 	}
 
-	// Here is some functional as well.
-	FFileHelper FileHelper;
+	// Here is some functionality as well.
+	//FFileHelper FileHelper;
 }
